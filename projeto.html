@@ -9,7 +9,7 @@
 -->
 
 		  <script src="three.min.js"></script>       
-		  <script src="OrbitControlsTH.min.js"></script>      
+		  <!--<script src="OrbitControlsTH.min.js"></script> -->     
 		  <script src="LineAxisHelper.js"></script>      
 		  <script src='DAT.GUI.min.js'></script>
 		  <script src="projetogeom.js"></script>      
@@ -143,7 +143,7 @@ light2.shadowMapHeight = 2048;
 	scene.add( sky );
 	
     // init controls : use OrbitControls.js
-    controls = new THREE.OrbitControlsTH(camera, renderer.domElement);
+   	  /* controls = new THREE.OrbitControlsTH(camera, renderer.domElement);
       controls.userZoom = true;        //true:a operação de zoom é possível, falso: a operação de zoom não é possível
       controls.userZoomSpeed = 1.0;    //Velocidade de zoom
       controls.userRotate = true;      //true:A operação de rotação é possível, falso: a operação de rotação não é possível
@@ -159,7 +159,7 @@ light2.shadowMapHeight = 2048;
     controls.object.position.set( -730.509,154.654,718.630 );  //cAMEYE
     controls.target = new THREE.Vector3( 14.246,152.893,42.163 ); //cAMTGT  
 	controls.lookaround = false;
-	controls.flyspeed = 50;
+	controls.flyspeed = 50; */
 	
     // axis ３軸表示 : use LineAxisHelper.js
     //axis = new THREE.AxisHelper(5000); 
@@ -451,14 +451,14 @@ case "Cena5":cpos=[51.933,203.941,1367.607];ctgt=[51.933,203.941,-251.298];break
 case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];break;
 
 		}
-		controls.object.position.set(cpos[0],cpos[1],cpos[2]);
-		controls.target = new THREE.Vector3(ctgt[0],ctgt[1],ctgt[2] ); 
+		//controls.object.position.set(cpos[0],cpos[1],cpos[2]);
+		//controls.target = new THREE.Vector3(ctgt[0],ctgt[1],ctgt[2] ); 
 		document.activeElement.blur();
 	});
 	var sklookaround = gui.add( parameters, 'lookaround' ).name('Caminhe').listen();
-	sklookaround.onChange(function(value){   controls.lookaround = value;  	});
+	//sklookaround.onChange(function(value){   controls.lookaround = value;  	});
 	var skflyspeed = gui.add( parameters, 'flyspeed' , 1 , 100).name('Velocidade').listen();
-	skflyspeed.onChange(function(value){   controls.flyspeed = value;  	});
+	//skflyspeed.onChange(function(value){   controls.flyspeed = value;  	});
 	var sktextureon = gui.add( parameters, 'textureon' ).name('Ver texturas').listen();
 	sktextureon.onChange(function(value){   texture_show( value);  	});
 	var skshadowon = gui.add( parameters, 'useshadow' ).name('Sombras ON/OFF').listen();
@@ -560,7 +560,7 @@ function texture_show(chk){
   // 
   function render() {
     requestAnimationFrame(render);
-    controls.update();
+    //controls.update();
     renderer.render(scene, camera);
   }
 
