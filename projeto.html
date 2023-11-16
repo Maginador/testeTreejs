@@ -280,13 +280,16 @@ light2.shadowMapHeight = 2048;
 		].join( "\n" )
 	  });
 		if(mat[i][2] !="" ){
-			var texture  = new THREE.ImageUtils.loadTexture(tex[i]);
-			texture.magFilter = THREE.NearestFilter;
-			texture.minFilter = THREE.NearestFilter;
-			texture.wrapS = THREE.RepeatWrapping;
-			texture.wrapT = THREE.RepeatWrapping;
-			//texture.repeat.set( mat[i][4] ,mat[i][5]);
-			materials[i].uniforms.map.value = texture;
+			const loader = new THREE.TextureLoader();
+			loader.load(tex[i], function (texture){
+				texture.magFilter = THREE.NearestFilter;
+				texture.minFilter = THREE.NearestFilter;
+				texture.wrapS = THREE.RepeatWrapping;
+				texture.wrapT = THREE.RepeatWrapping;
+				//texture.repeat.set( mat[i][4] ,mat[i][5]);
+				materials[i].map = texture;
+			},undefined,undefined);
+			
 		}
 		if(mat[i][1] < 1.0){
 			materials[i].transparent = true;
