@@ -357,13 +357,19 @@ mtx[2]/mtx[15],mtx[6]/mtx[15],mtx[10]/mtx[15],mtx[14]/mtx[15],
 mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 );
     var geom, vt,vt2, fc, mface,fst,vst;
-    geom = new THREE.Geometry();
+    geom = new THREE.BufferGeometry();
+	const vertices = new Float32Array(geomlist[k].nv*3);
+	geom.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
+	let counter = 0
     for(var j=0; j < geomlist[k].nv; j++){
+	  const positionAttribute = geom.getAttribute( 'position' );
 	  vst = geomlist[k].v[j].split(",");//
       vt = new THREE.Vector3(parseInt(vst[0],36)/Math.pow(10,prec),parseInt(vst[1],36)/Math.pow(10,prec),parseInt(vst[2],36)/Math.pow(10,prec));
-      geom.vertices.push(vt);
+	  positionAttribute.setXYZ(j, vt.x, vt.y, vt.z);
     }
-	
+	fc = new Float32Array(geomlist[k].nf*3);
+
     for(var j=0; j < geomlist[k].nf; j++){
 		fst = geomlist[k].f[j].split(",")
 		if( use_texture == true ){
@@ -374,50 +380,69 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 		}
 		var mati = geomlist[k].mti[j];
 		if( mati == 0 ){ //mati = dfmatid; }
-			fc = new THREE.Face3( parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, dfmatid );
-			geom.faces.push(fc);
+			fc[counter] = (parseInt(fst[0], 36));
+			fc[counter+1] = (parseInt(fst[1], 36));
+			fc[counter+2] = (parseInt(fst[2], 36));
+			counter +=3;
+
+			geom.setIndex( new THREE.BufferAttribute( fc, 1 ) );
 			if( use_texture == true ){
-				geom.faceVertexUvs[0].push( [
+				/* geom.faceVertexUvs[0].push( [
 				  new THREE.Vector2(parseInt(uvst[0][0], 36)/Math.pow(10,prec) * uscale, parseInt(uvst[0][1], 36)/Math.pow(10,prec) * vscale),
 				  new THREE.Vector2(parseInt(uvst[1][0], 36)/Math.pow(10,prec) * uscale, parseInt(uvst[1][1], 36)/Math.pow(10,prec) * vscale),
 				  new THREE.Vector2(parseInt(uvst[2][0], 36)/Math.pow(10,prec) * uscale, parseInt(uvst[2][1], 36)/Math.pow(10,prec) * vscale)]
-				);
+				); */
 			}
 		}else{
-			fc = new THREE.Face3( parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, mati );
-			geom.faces.push(fc);
+			fc[counter] = (parseInt(fst[0], 36));
+			fc[counter+1] = (parseInt(fst[1], 36));
+			fc[counter+2] = (parseInt(fst[2], 36));
+			counter +=3;
+			geom.setIndex( new THREE.BufferAttribute( fc, 1 ) );
+
 			if( use_texture == true ){
-				geom.faceVertexUvs[0].push( [
+				/* geom.faceVertexUvs[0].push( [
 				  new THREE.Vector2(parseInt(uvst[0][0], 36)/Math.pow(10,prec), parseInt(uvst[0][1], 36)/Math.pow(10,prec)),
 				  new THREE.Vector2(parseInt(uvst[1][0], 36)/Math.pow(10,prec), parseInt(uvst[1][1], 36)/Math.pow(10,prec)),
 				  new THREE.Vector2(parseInt(uvst[2][0], 36)/Math.pow(10,prec), parseInt(uvst[2][1], 36)/Math.pow(10,prec))]
-				);
+				); */
 			}
 		}
     }
 	
-	geom.applyMatrix(matrix);
-	geom.applyMatrix(mrot);
-    geom.computeFaceNormals();
+	geom.applyMatrix4(matrix);
+	geom.applyMatrix4(mrot);
+    geom.computeVertexNormals();
 	//geom.translate(mtx[12],-mtx[13],-mtx[14]);
 	
     //geom.computeVertexNormals();
-    mface = new THREE.Mesh(geom, new THREE.MeshFaceMaterial(materials));
+    mface = new THREE.Mesh(geom, materials);
 mface.castShadow = true;
 mface.receiveShadow = true;
     scene.add( mface );
-	var edgeom = new THREE.Geometry();
+	var edgeom = new THREE.BufferGeometry();
+	const edgeVertices = new Float32Array(geomlist[k].ne*3*2);
+	edgeom.setAttribute( 'position', new THREE.BufferAttribute( edgeVertices, 3 ) );
+
+	counter = 0;
     for(var j=0; j < geomlist[k].ne; j++){
+
 		if(geomlist[k].ed[j]){
-		edst = geomlist[k].ed[j].split(",")
-		vst = geomlist[k].v[parseInt(edst[0], 36)].split(",");//
-		edgeom.vertices.push( new THREE.Vector3(parseInt(vst[0],36)/Math.pow(10,prec),parseInt(vst[1],36)/Math.pow(10,prec),parseInt(vst[2],36)/Math.pow(10,prec)) );
-		vst = geomlist[k].v[parseInt(edst[1], 36)].split(",");//
-		edgeom.vertices.push( new THREE.Vector3(parseInt(vst[0],36)/Math.pow(10,prec),parseInt(vst[1],36)/Math.pow(10,prec),parseInt(vst[2],36)/Math.pow(10,prec)) );
+			const positionAttribute = edgeom.getAttribute( 'position' );
+
+			edst = geomlist[k].ed[j].split(",")
+			
+			vst = geomlist[k].v[parseInt(edst[0], 36)].split(",");//
+			let vert1 = new THREE.Vector3(parseInt(vst[0],36)/Math.pow(10,prec),parseInt(vst[1],36)/Math.pow(10,prec),parseInt(vst[2],36)/Math.pow(10,prec)) ;
+			positionAttribute.setXYZ(counter, vert1.x, vert1.y, vert1.z);
+			vst = geomlist[k].v[parseInt(edst[1], 36)].split(",");//
+			let vert2 =  new THREE.Vector3(parseInt(vst[0],36)/Math.pow(10,prec),parseInt(vst[1],36)/Math.pow(10,prec),parseInt(vst[2],36)/Math.pow(10,prec));
+			positionAttribute.setXYZ(counter+1, vert2.x, vert2.y, vert2.z);
+			counter +=2;
 		}
     }
-	edgeom.applyMatrix(matrix);
-	edgeom.applyMatrix(mrot);
+	edgeom.applyMatrix4(matrix);
+	edgeom.applyMatrix4(mrot);
 	//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 	var lines = new THREE.LineSegments( edgeom,linemat );
 	scene.add( lines );
