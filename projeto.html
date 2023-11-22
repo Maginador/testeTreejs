@@ -173,6 +173,11 @@ light2.shadowMapHeight = 2048;
 	materialsPBR[i] = new THREE.MeshStandardMaterial();
 	materialsPBR[i].color = new THREE.Color(mat[i][0]);
 	materialsPBR[i].opacity = mat[i][1];
+	
+	//Use Emissive Material 
+	
+	materialsPBR[i].emissive = new THREE.Color(0xffffff);
+	materialsPBR[i].emissiveIntensity = .3;
 
 
      materials[i] = new THREE.ShaderMaterial( {
