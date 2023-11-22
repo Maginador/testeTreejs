@@ -49,6 +49,7 @@
 </script>
 <script id="main_wgl" type="text/javascript" >
   var materials = [];
+  var materialsPBR = [];
   var clipMAX = 100.0;
   var clipMIN = 0.0;
   var camera,headlight;
@@ -168,6 +169,12 @@ light2.shadowMapHeight = 2048;
     // init materials
 	codeclips = "vec3 clipDIST = vec3( 3908.220,452.000,3908.220 ) + vec3(40,40,40);vec3 clipBASE = vec3( -1954.110,-0.000,-1836.626 ) - vec3(20,20,20);"
     for(var i=0; i < mat.length; i++){
+
+	materialsPBR[i] = new THREE.MeshStandardMaterial();
+	materialsPBR[i].color = new THREE.Color(mat[i][0]);
+	materialsPBR[i].opacity = mat[i][1];
+
+
      materials[i] = new THREE.ShaderMaterial( {
 		uniforms: THREE.UniformsUtils.merge([
 			THREE.UniformsLib[ "common" ],
@@ -286,14 +293,20 @@ light2.shadowMapHeight = 2048;
 			texture.wrapS = THREE.RepeatWrapping;
 			texture.wrapT = THREE.RepeatWrapping;
 			//texture.repeat.set( mat[i][4] ,mat[i][5]);
-			materials[i].uniforms.map.value = texture;
+			materials[i].map = texture;
+			materialsPBR[i].map = texture;
+
 		}
 		if(mat[i][1] < 1.0){
 			materials[i].transparent = true;
 			materials[i].blending = THREE.NormalBlending;
+			materialsPBR[i].transparent = true;
+			materialsPBR[i].blending = THREE.NormalBlending;
 		}
         materials[i].side = THREE.DoubleSide;
 		materials[i].lights = true;
+		materialsPBR[i].side = THREE.DoubleSide;
+		materialsPBR[i].lights = true;
     }
 	linemat = new THREE.ShaderMaterial( {
 		vertexShader: "varying vec3 mdpos;void main() {mdpos = vec3(position);gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);}",
@@ -335,6 +348,8 @@ light2.shadowMapHeight = 2048;
 			linewidth:2
 		} );
 		materials.push( linemat);
+		materialsPBR.push( linemat);
+
 	//texture_show(true);
     // init objects
     //objects = new THREE.Group();
@@ -393,13 +408,13 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 		}
     }
 	
-	geom.applyMatrix(matrix);
-	geom.applyMatrix(mrot);
+	geom.applyMatrix4(matrix);
+	geom.applyMatrix4(mrot);
     geom.computeFaceNormals();
 	//geom.translate(mtx[12],-mtx[13],-mtx[14]);
 	
     //geom.computeVertexNormals();
-    mface = new THREE.Mesh(geom, new THREE.MeshFaceMaterial(materials));
+    mface = new THREE.Mesh(geom, materialsPBR);
 mface.castShadow = true;
 mface.receiveShadow = true;
     scene.add( mface );
@@ -413,8 +428,8 @@ mface.receiveShadow = true;
 		edgeom.vertices.push( new THREE.Vector3(parseInt(vst[0],36)/Math.pow(10,prec),parseInt(vst[1],36)/Math.pow(10,prec),parseInt(vst[2],36)/Math.pow(10,prec)) );
 		}
     }
-	edgeom.applyMatrix(matrix);
-	edgeom.applyMatrix(mrot);
+	edgeom.applyMatrix4(matrix);
+	edgeom.applyMatrix4(mrot);
 	//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 	var lines = new THREE.LineSegments( edgeom,linemat );
 	scene.add( lines );
@@ -542,15 +557,16 @@ case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];bre
     //render();
   }
 function texture_show(chk){
+	console.log(mat);
     for(var i=0; i < mat.length; i++){
       if (mat[i][2] != ""){
         // texture付material：画像をLoad
 		if(chk){
-			materials[i].uniforms.usemap.value = 1;
+			//materials[i].uniforms.usemap.value = 1;
 			//materials[i].overdraw = true;
 			materials[i].needsUpdate = true;
 		}else{
-			materials[i].uniforms.usemap.value = 0;
+			//materials[i].uniforms.usemap.value = 0;
 			//materials[i].overdraw = true;
 			materials[i].needsUpdate = true;
 		}
