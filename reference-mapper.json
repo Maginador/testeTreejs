@@ -1,0 +1,28 @@
+{
+    "models":[{
+        "pattern":{
+            "prefix": "_",
+            "sufix": "_",
+            "contains":"test",
+            "equals":"TV"
+        },
+        "material-name":"material-template"
+    }]  
+    ,
+    "materials":[{
+        "emission-intensity":0,
+        "video-texture":true,
+        "video-source":"source.mp4",
+        "shininess":0,
+        "roughness":0
+    }],
+    "lights":[
+        {
+            "type":"point",
+            "position":{"x":0,"y":0,"z":0 },
+            "intensity" : 0.5,
+            "color" : "0xffffff",
+            "range": 1.0
+        }
+    ]
+}
