@@ -1,0 +1,19 @@
+{
+    "models":[
+        {
+            "prefix": "_",
+            "sufix": "_",
+            "contains":"test",
+            "equals":"TV",
+
+            "material":"material-template"
+        }
+    ],
+    "materials":{
+        "emission-intensity":0,
+        "video-texture":true,
+        "video-source":"source.mp4",
+        "shininess":0,
+        "roughness":0
+    }
+}
