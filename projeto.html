@@ -55,7 +55,8 @@
   var clipMIN = 0.0;
   var camera,headlight;
   // 
-  function init() {
+  async function init() {
+
     // init three
     if (window.WebGLRenderingContext) {
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -168,17 +169,22 @@ light2.shadowMapHeight = 2048;
     //axis.position.set(0, 0, 0);
     //scene.add(axis);
     // init materials
+
+	await InitMapper();
+	//add listener to play the video on click (because of a browser limitation we can not play automatically without user interaction)
+	document.body.addEventListener('click', () => {
+		let video = document.getElementById( 'video' );
+		video.play();
+
+	}, true); 
+
 	codeclips = "vec3 clipDIST = vec3( 3908.220,452.000,3908.220 ) + vec3(40,40,40);vec3 clipBASE = vec3( -1954.110,-0.000,-1836.626 ) - vec3(20,20,20);"
     for(var i=0; i < mat.length; i++){
 
-	materialsPBR[i] = new THREE.MeshStandardMaterial();
+	const tempMaterial = await MapMaterial(mat[i][3])
+	materialsPBR[i] = tempMaterial;
 	materialsPBR[i].color = new THREE.Color(mat[i][0]);
 	materialsPBR[i].opacity = mat[i][1];
-	
-	//Use Emissive Material 
-	
-	materialsPBR[i].emissive = new THREE.Color(0xffffff);
-	materialsPBR[i].emissiveIntensity = .3;
 
 
      materials[i] = new THREE.ShaderMaterial( {
@@ -300,7 +306,7 @@ light2.shadowMapHeight = 2048;
 			texture.wrapT = THREE.RepeatWrapping;
 			//texture.repeat.set( mat[i][4] ,mat[i][5]);
 			materials[i].map = texture;
-			materialsPBR[i].map = texture;
+			if(!materialsPBR[i].map)materialsPBR[i].map = texture;
 
 		}
 		if(mat[i][1] < 1.0){
@@ -472,8 +478,8 @@ case "Cena5":cpos=[51.933,203.941,1367.607];ctgt=[51.933,203.941,-251.298];break
 case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];break;
 
 		}
-		controls.object.position.set(cpos[0],cpos[1],cpos[2]);
-		controls.target = new THREE.Vector3(ctgt[0],ctgt[1],ctgt[2] ); 
+		if(controls)controls.object.position.set(cpos[0],cpos[1],cpos[2]);
+		if(controls)controls.target = new THREE.Vector3(ctgt[0],ctgt[1],ctgt[2] ); 
 		document.activeElement.blur();
 	});
 	var sklookaround = gui.add( parameters, 'lookaround' ).name('Caminhe').listen();
@@ -582,7 +588,7 @@ function texture_show(chk){
   // 
   function render() {
     requestAnimationFrame(render);
-    controls.update();
+    if(controls)controls.update();
     renderer.render(scene, camera);
   }
 
@@ -591,6 +597,8 @@ function texture_show(chk){
 <body onload="main_wgl();" style="overflow: hidden;height: 100%;">
   <div id="container"></div>
   <div id="menu"> </div>
+  <video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
+</video>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js" integrity="sha384-THVO/sM0mFD9h7dfSndI6TS0PgAGavwKvB5hAxRRvc0o9cPLohB0wb/PTA7LdUHs" crossorigin="anonymous"></script>
 

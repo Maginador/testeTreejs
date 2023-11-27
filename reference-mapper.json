@@ -1,23 +1,40 @@
 {
-    "models":[{
+    "materials":[{
         "pattern":{
             "prefix": "_",
             "sufix": "_",
             "contains":"test",
             "equals":"TV"
         },
-        "material-name":"material-template"
-    }]  
-    ,
-    "materials":[{
-        "emission-intensity":0,
-        "video-texture":true,
-        "video-source":"source.mp4",
+        "emissionintensity":0,
+        "emissioncolor":"#ffffff",
+        "videotexture":false,
+        "videosource":"",
+        "shininess":0,
+        "roughness":0
+    },
+    {
+        "pattern":{
+            "prefix": "---",
+            "sufix": "---",
+            "contains":"---",
+            "equals":"0312b453-cd67-41e3-8f2c-13656761b841_5"
+        },
+        "emissionintensity":0,
+        "emissioncolor":"#ffffff",
+        "videotexture":true,
+        "videosource":"video.mp4",
         "shininess":0,
         "roughness":0
     }],
     "lights":[
         {
+            "pattern":{
+            "prefix": "_",
+            "sufix": "_",
+            "contains":"test",
+            "equals":"TV"
+            },
             "type":"point",
             "position":{"x":0,"y":0,"z":0 },
             "intensity" : 0.5,
