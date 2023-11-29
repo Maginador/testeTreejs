@@ -14,6 +14,7 @@
 		  <script src='DAT.GUI.min.js'></script>
 		  <script src="projetogeom.js"></script>      
 		
+		  <script src="mapper.js"></script>
 
 <script type="x-shader/x-vertex" id="vertexShader">
 
@@ -49,11 +50,13 @@
 </script>
 <script id="main_wgl" type="text/javascript" >
   var materials = [];
+  var materialsPBR = [];
   var clipMAX = 100.0;
   var clipMIN = 0.0;
   var camera,headlight;
   // 
-  function init() {
+  async function init() {
+
     // init three
     if (window.WebGLRenderingContext) {
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -166,8 +169,24 @@ light2.shadowMapHeight = 2048;
     //axis.position.set(0, 0, 0);
     //scene.add(axis);
     // init materials
+
+	await InitMapper();
+	//add listener to play the video on click (because of a browser limitation we can not play automatically without user interaction)
+	document.body.addEventListener('click', () => {
+		let video = document.getElementById( 'video' );
+		video.play();
+
+	}, true); 
+
 	codeclips = "vec3 clipDIST = vec3( 3908.220,452.000,3908.220 ) + vec3(40,40,40);vec3 clipBASE = vec3( -1954.110,-0.000,-1836.626 ) - vec3(20,20,20);"
     for(var i=0; i < mat.length; i++){
+
+	const tempMaterial = await MapMaterial(mat[i][3])
+	materialsPBR[i] = tempMaterial;
+	materialsPBR[i].color = new THREE.Color(mat[i][0]);
+	materialsPBR[i].opacity = mat[i][1];
+
+
      materials[i] = new THREE.ShaderMaterial( {
 		uniforms: THREE.UniformsUtils.merge([
 			THREE.UniformsLib[ "common" ],
@@ -286,14 +305,20 @@ light2.shadowMapHeight = 2048;
 			texture.wrapS = THREE.RepeatWrapping;
 			texture.wrapT = THREE.RepeatWrapping;
 			//texture.repeat.set( mat[i][4] ,mat[i][5]);
-			materials[i].uniforms.map.value = texture;
+			materials[i].map = texture;
+			if(!materialsPBR[i].map)materialsPBR[i].map = texture;
+
 		}
 		if(mat[i][1] < 1.0){
 			materials[i].transparent = true;
 			materials[i].blending = THREE.NormalBlending;
+			materialsPBR[i].transparent = true;
+			materialsPBR[i].blending = THREE.NormalBlending;
 		}
         materials[i].side = THREE.DoubleSide;
 		materials[i].lights = true;
+		materialsPBR[i].side = THREE.DoubleSide;
+		materialsPBR[i].lights = true;
     }
 	linemat = new THREE.ShaderMaterial( {
 		vertexShader: "varying vec3 mdpos;void main() {mdpos = vec3(position);gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);}",
@@ -335,6 +360,8 @@ light2.shadowMapHeight = 2048;
 			linewidth:2
 		} );
 		materials.push( linemat);
+		materialsPBR.push( linemat);
+
 	//texture_show(true);
     // init objects
     //objects = new THREE.Group();
@@ -393,13 +420,13 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 		}
     }
 	
-	geom.applyMatrix(matrix);
-	geom.applyMatrix(mrot);
+	geom.applyMatrix4(matrix);
+	geom.applyMatrix4(mrot);
     geom.computeFaceNormals();
 	//geom.translate(mtx[12],-mtx[13],-mtx[14]);
 	
     //geom.computeVertexNormals();
-    mface = new THREE.Mesh(geom, new THREE.MeshFaceMaterial(materials));
+    mface = new THREE.Mesh(geom, materialsPBR);
 mface.castShadow = true;
 mface.receiveShadow = true;
     scene.add( mface );
@@ -413,8 +440,8 @@ mface.receiveShadow = true;
 		edgeom.vertices.push( new THREE.Vector3(parseInt(vst[0],36)/Math.pow(10,prec),parseInt(vst[1],36)/Math.pow(10,prec),parseInt(vst[2],36)/Math.pow(10,prec)) );
 		}
     }
-	edgeom.applyMatrix(matrix);
-	edgeom.applyMatrix(mrot);
+	edgeom.applyMatrix4(matrix);
+	edgeom.applyMatrix4(mrot);
 	//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 	var lines = new THREE.LineSegments( edgeom,linemat );
 	scene.add( lines );
@@ -451,8 +478,8 @@ case "Cena5":cpos=[51.933,203.941,1367.607];ctgt=[51.933,203.941,-251.298];break
 case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];break;
 
 		}
-		controls.object.position.set(cpos[0],cpos[1],cpos[2]);
-		controls.target = new THREE.Vector3(ctgt[0],ctgt[1],ctgt[2] ); 
+		if(controls)controls.object.position.set(cpos[0],cpos[1],cpos[2]);
+		if(controls)controls.target = new THREE.Vector3(ctgt[0],ctgt[1],ctgt[2] ); 
 		document.activeElement.blur();
 	});
 	var sklookaround = gui.add( parameters, 'lookaround' ).name('Caminhe').listen();
@@ -542,15 +569,16 @@ case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];bre
     //render();
   }
 function texture_show(chk){
+	console.log(mat);
     for(var i=0; i < mat.length; i++){
       if (mat[i][2] != ""){
         // texture付material：画像をLoad
 		if(chk){
-			materials[i].uniforms.usemap.value = 1;
+			//materials[i].uniforms.usemap.value = 1;
 			//materials[i].overdraw = true;
 			materials[i].needsUpdate = true;
 		}else{
-			materials[i].uniforms.usemap.value = 0;
+			//materials[i].uniforms.usemap.value = 0;
 			//materials[i].overdraw = true;
 			materials[i].needsUpdate = true;
 		}
@@ -560,7 +588,7 @@ function texture_show(chk){
   // 
   function render() {
     requestAnimationFrame(render);
-    controls.update();
+    if(controls)controls.update();
     renderer.render(scene, camera);
   }
 
@@ -569,6 +597,8 @@ function texture_show(chk){
 <body onload="main_wgl();" style="overflow: hidden;height: 100%;">
   <div id="container"></div>
   <div id="menu"> </div>
+  <video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
+</video>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js" integrity="sha384-THVO/sM0mFD9h7dfSndI6TS0PgAGavwKvB5hAxRRvc0o9cPLohB0wb/PTA7LdUHs" crossorigin="anonymous"></script>
 
