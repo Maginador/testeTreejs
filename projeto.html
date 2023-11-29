@@ -15,6 +15,7 @@
 		  <script src="projetogeom.js"></script>      
 		
 		  <script src="mapper.js"></script> 
+		  <script src="ruler.js"></script>
 		  <script type="x-shader/x-vertex" id="bloom-vertexshader">
 
 			varying vec2 vUv;
@@ -217,6 +218,9 @@ light2.shadow.mapSize.height = 2048;
 		let video = document.getElementById( 'video' );
 		video.play();
 
+		//enable ruler when clicking
+		//TODO improve user experience with ui command and proper event 
+		RulerRaycast(camera, scene);
 	}, true); 
 
 	codeclips = "vec3 clipDIST = vec3( 3908.220,452.000,3908.220 ) + vec3(40,40,40);vec3 clipBASE = vec3( -1954.110,-0.000,-1836.626 ) - vec3(20,20,20);"
