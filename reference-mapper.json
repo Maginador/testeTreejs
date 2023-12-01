@@ -1,9 +1,9 @@
 {
     "materials":[{
         "pattern":{
-            "prefix": "_",
-            "sufix": "_",
-            "contains":"test",
+            "prefix": "------",
+            "sufix": "---",
+            "contains":"----",
             "equals":"TV"
         },
         "emissionintensity":0,
@@ -12,6 +12,21 @@
         "videosource":"",
         "shininess":0,
         "roughness":0
+    },
+    {
+        "pattern":{
+            "prefix": "led",
+            "sufix": "_",
+            "contains":"------",
+            "equals":"-------"
+        },
+        "emissionintensity":0.3,
+        "emissioncolor":"#ffffff",
+        "videotexture":false,
+        "videosource":"",
+        "shininess":0,
+        "roughness":0,
+        "bloom":true
     },
     {
         "pattern":{

@@ -61,6 +61,7 @@ async function BuildMaterial(material){
         texture.colorSpace = THREE.SRGBColorSpace;
         mat.map = texture;
     }
+    mat.bloom = material.bloom;
     return mat; 
 }
 let jsonData;
