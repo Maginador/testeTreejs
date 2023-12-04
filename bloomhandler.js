@@ -58,22 +58,11 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
 }
 window.darkenNonBloomed = function darkenNonBloomed(obj) {
-
-    if (obj.isMesh && !obj.customProp) {
-
-        materials[obj.uuid] = obj.material;
-        obj.material = darkMaterial;
-
-    }
+    obj.material = materialsPBRDark;
 }
 
 window.restoreMaterial = function restoreMaterial(obj) {
 
-    if (materials[obj.uuid]) {
-
-        obj.material = materials[obj.uuid];
-        delete materials[obj.uuid];
-
-    }
+obj.material = materialsPBR;
 
 }
