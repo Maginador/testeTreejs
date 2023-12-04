@@ -1,9 +1,9 @@
 {
     "materials":[{
         "pattern":{
-            "prefix": "------",
-            "sufix": "---",
-            "contains":"----",
+            "prefix": "",
+            "sufix": "",
+            "contains":"",
             "equals":"TV"
         },
         "emissionintensity":0,
@@ -15,10 +15,10 @@
     },
     {
         "pattern":{
-            "prefix": "------",
-            "sufix": "---",
+            "prefix": "",
+            "sufix": "",
             "contains":"apagar",
-            "equals":"----"
+            "equals":""
         },
         "emissionintensity":0,
         "emissioncolor":"#ffffff",
@@ -32,9 +32,9 @@
     {
         "pattern":{
             "prefix": "led",
-            "sufix": "_",
-            "contains":"------",
-            "equals":"-------"
+            "sufix": "",
+            "contains":"",
+            "equals":""
         },
         "emissionintensity":0.3,
         "emissioncolor":"#ffffff",
@@ -46,9 +46,9 @@
     },
     {
         "pattern":{
-            "prefix": "---",
-            "sufix": "---",
-            "contains":"---",
+            "prefix": "",
+            "sufix": "",
+            "contains":"",
             "equals":"0312b453-cd67-41e3-8f2c-13656761b841_5"
         },
         "emissionintensity":0,
@@ -61,10 +61,10 @@
     "lights":[
         {
             "pattern":{
-            "prefix": "----",
-            "sufix": "----",
+            "prefix": "",
+            "sufix": "",
             "contains":"apagar",
-            "equals":"----"
+            "equals":""
             },
             "removemesh":true,
             "type":"spot",

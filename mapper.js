@@ -5,12 +5,20 @@ async function GetMapperJson(){
     return json;
 }
 
+function ValidatePattern(pattern, src){
+    var result = false;
+    if((pattern.prefix && src.startsWith(pattern.prefix)) || 
+    (pattern.sufix && src.endsWith(pattern.sufix)) || 
+    (pattern.contains && src.includes(pattern.contains)) ||
+    (pattern.equals && src === pattern.equals)){
+        result = true;
+    }
+
+    return result;
+}
 async function MapLightsMaterials(src){
     for(let i = 0; i<jsonLights.length; i++){
-        if(src.startsWith(jsonLights[i].pattern.prefix) || 
-        src.endsWith(jsonLights[i].pattern.sufix) || 
-        src.includes(jsonLights[i].pattern.contains) ||
-        src === jsonLights[i].pattern.equals){
+        if(ValidatePattern(jsonLights[i].pattern,src)){
             return jsonLights[i]
         }  
     }
@@ -19,10 +27,7 @@ async function MapLightsMaterials(src){
 
 async function MapLights(src, position){
     for(let i = 0; i<jsonMaterials.length; i++){
-        if(src.startsWith(jsonMaterials[i].pattern.prefix) || 
-        src.endsWith(jsonMaterials[i].pattern.sufix) || 
-        src.includes(jsonMaterials[i].pattern.contains) ||
-        src === jsonMaterials[i].pattern.equals){
+        if(ValidatePattern(jsonMaterials[i].pattern,src)){
             light = await BuildLight(jsonMaterials[i], position);
         }  
     }
@@ -33,10 +38,7 @@ async function MapMaterial(src){
 
     let mat = BuildDefaultMaterial();
     for(let i = 0; i<jsonMaterials.length; i++){
-        if(src.startsWith(jsonMaterials[i].pattern.prefix) || 
-        src.endsWith(jsonMaterials[i].pattern.sufix) || 
-        src.includes(jsonMaterials[i].pattern.contains) ||
-        src === jsonMaterials[i].pattern.equals){
+        if(ValidatePattern(jsonMaterials[i].pattern,src)){
             mat = await BuildMaterial(jsonMaterials[i]);
         }  
     }
@@ -66,14 +68,12 @@ async function BuildLight(lightData, position){
             break;
         
     }
-    //TODO Verify if it is possible to store the data directly from exporter
+
     light.position.set(position.x,position.y,position.z);
     light.angle = Math.PI/lightData.angle ;
     const targetObject = new THREE.Object3D(); 
     targetObject.position.set (position.x+lightData.targetoffset.x, position.y+lightData.targetoffset.y, position.z+lightData.targetoffset.z);
-    
-    scene.add(targetObject); 
-    
+    scene.add(targetObject);     
     light.target = targetObject;
     light.intensity = lightData.intensity;
 
