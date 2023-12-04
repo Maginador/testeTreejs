@@ -15,6 +15,22 @@
     },
     {
         "pattern":{
+            "prefix": "------",
+            "sufix": "---",
+            "contains":"apagar",
+            "equals":"----"
+        },
+        "emissionintensity":0,
+        "emissioncolor":"#ffffff",
+        "videotexture":false,
+        "videosource":"",
+        "shininess":0,
+        "roughness":0,
+        "removemesh":true,
+        "light":true
+    },
+    {
+        "pattern":{
             "prefix": "led",
             "sufix": "_",
             "contains":"------",
@@ -45,16 +61,19 @@
     "lights":[
         {
             "pattern":{
-            "prefix": "_",
-            "sufix": "_",
-            "contains":"test",
-            "equals":"TV"
+            "prefix": "----",
+            "sufix": "----",
+            "contains":"apagar",
+            "equals":"----"
             },
-            "type":"point",
-            "position":{"x":0,"y":0,"z":0 },
-            "intensity" : 0.5,
-            "color" : "0xffffff",
-            "range": 1.0
+            "removemesh":true,
+            "type":"spot",
+            "intensity" : 0.1,
+            "color" : "#ffffff",
+            "range": 1.0,
+            "angle":3,
+            "targetoffset":{"x":0,"y":-100,"z":0}
         }
+
     ]
 }

@@ -88,11 +88,13 @@
   var materials = [];
   var materialsPBR = [];
   var materialsPBRDark = [];
+  var lighthelpers = [];
   var clipMAX = 100.0;
   var clipMIN = 0.0;
   var camera,headlight;
   // 
   const BLOOM_SCENE = 1;
+  const lightsList = [];
 
 
   async function init() {
@@ -182,7 +184,7 @@ light2.shadowMapHeight = 2048;
 	skyGeo.translate(tpos.x,tpos.y,tpos.z);
 	var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
 	var sky = new THREE.Mesh( skyGeo, skyMat );
-	scene.add( sky );
+	//scene.add( sky );
 	
     // init controls : use OrbitControls.js
     controls = new THREE.OrbitControlsTH(camera, renderer.domElement);
@@ -221,6 +223,15 @@ light2.shadowMapHeight = 2048;
     for(var i=0; i < mat.length; i++){
 
 	const tempMaterial = await MapMaterial(mat[i][3].toLowerCase())
+	const tempLightData = await MapLightsMaterials(mat[i][3].toLowerCase()); 
+	if(tempLightData){
+		tempMaterial.isLight = true;
+		tempMaterial.json = tempLightData;
+		tempLightData.referenceMaterial = tempMaterial;
+		lightsList.push (tempLightData);
+	}
+	
+
 	materialsPBR[i] = tempMaterial;
 	if(!tempMaterial.bloom){
 		materialsPBRDark[i] = new THREE.MeshBasicMaterial({ color: 'black' });
@@ -229,8 +240,7 @@ light2.shadowMapHeight = 2048;
 	}
 	materialsPBR[i].color = new THREE.Color(mat[i][0]);
 	materialsPBR[i].opacity = mat[i][1];
-
-
+	//if(materialsPBR[i].light)materialsPBR[i].color = new THREE.Color(0x000000);
      materials[i] = new THREE.ShaderMaterial( {
 		uniforms: THREE.UniformsUtils.merge([
 			THREE.UniformsLib[ "common" ],
@@ -441,6 +451,7 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 			}
 		}
 		var mati = geomlist[k].mti[j];
+
 		if( mati == 0 ){ //mati = dfmatid; }
 			fc = new THREE.Face3( parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, dfmatid );
 			geom.faces.push(fc);
@@ -468,7 +479,6 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 	geom.applyMatrix4(mrot);
     geom.computeFaceNormals();
 	//geom.translate(mtx[12],-mtx[13],-mtx[14]);
-	
     //geom.computeVertexNormals();
     mface = new THREE.Mesh(geom, materialsPBR);
 	mface.castShadow = true;
@@ -476,17 +486,23 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 
 	for(var j=0; j < geomlist[k].nf; j++){
 
-	var mati = geomlist[k].mti[j];
-	//var children = mface.children;
-	children = [];
-	mface.traverse(test);
-	console.log(children);
-	children = [];
+		var mati = geomlist[k].mti[j];
+		if(mati === 0) mati = dfmatid;
+		if(materialsPBR[mati].isLight){
+			//mface.material = null;
+			var vertexMiddle = computeVertexMiddle(geom);
+ 			var mLight = await BuildLight(materialsPBR[mati].json,vertexMiddle);
 
-	//console.log(mface);
-	//console.log(geomlist[k].mti);
+			const spotLightHelper = new THREE.SpotLightHelper( mLight );
+			lighthelpers.push(spotLightHelper);
+			scene.add(mLight);
+			scene.add( spotLightHelper );
+
+			//mface.visible = false;
+			break;
+		}
+
 		if(materialsPBR[mati].bloom){
-			//console.log("bloom");
 			const bloomLayer = new THREE.Layers();
 			bloomLayer.set( BLOOM_SCENE );
 			mface.customProp = BLOOM_SCENE;
@@ -494,8 +510,8 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 			mface.customProp = undefined;
 
 		}
-	}
 	
+	}
 	scene.add( mface );
 
 	var edgeom = new THREE.Geometry();
@@ -630,6 +646,15 @@ case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];bre
 	window.ApplyBloom(scene,renderer);
 	}
 
+	function computeVertexMiddle(geom){
+		var x=0,y=0,z=0;
+		for(var i =0; i< geom.vertices.length;i++){
+			x += geom.vertices[i].x;
+			y += geom.vertices[i].y;
+			z += geom.vertices[i].z;
+		}
+		return new THREE.Vector3(x/geom.vertices.length, y/geom.vertices.length, z/geom.vertices.length);
+	}
   // ウィンドウリサイズ時の動作
   function onWindowResize() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
@@ -654,20 +679,11 @@ function texture_show(chk){
       }
     }
 }
-  // 
-
-  let children = [];
-  function test(obj){
-	console.log(obj);
-	children.push(obj);
-  }
   function render() {
     requestAnimationFrame(render);
     if(controls)controls.update();
-
 		//renderer.render(scene, camera);
 		if(window.bloomComposer){
-			//console.log("running bloom");
 			scene.traverse( window.darkenNonBloomed );
 			scene.background = new THREE.Color(0x000000);
 			bloomComposer.render();
@@ -675,6 +691,7 @@ function texture_show(chk){
 			scene.background = new THREE.Color(0xffffff);
 			window.finalComposer.render();
 		}
+
   }
 
 </script>
