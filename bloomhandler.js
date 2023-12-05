@@ -16,8 +16,7 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
     window.bloomComposer = new EffectComposer(renderer);
     window.finalComposer = new EffectComposer(renderer);
 
-
-
+    //Bloom parameters
     const params = {
         threshold: 0,
         strength: 1,
@@ -58,11 +57,18 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
 }
 window.darkenNonBloomed = function darkenNonBloomed(obj) {
-    obj.material = materialsPBRDark;
+    if(obj.isMesh && obj.material.length>1){
+        materials[ obj.uuid ] = obj.material;
+        obj.material = materialsPBRDark;
+
+    }
 }
 
 window.restoreMaterial = function restoreMaterial(obj) {
 
-obj.material = materialsPBR;
+    if ( materials[ obj.uuid ] ) {
 
+        obj.material = materials[ obj.uuid ];
+        delete materials[ obj.uuid ];
+    }
 }

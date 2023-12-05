@@ -157,17 +157,17 @@ light2.shadow.mapSize.height = 2048;
 	
     light3 = new THREE.DirectionalLight(0x333333, 1.0);
     light3.position.set(-sunvec.x,-sunvec.y,-sunvec.z);
-    //scene.add( light3 );
+    scene.add( light3 );
 
     headlight = new THREE.DirectionalLight(0x333333, 1.0);
     headlight.position.set(0, 0, 0);
-    //scene.add( headlight );
+    scene.add( headlight );
 
 	hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.1 );
 	hemiLight.color.setHSL( 1, 1, 1 );
 	hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
 	hemiLight.position.set( 0, 0, 0 );
-	//scene.add( hemiLight );
+	scene.add( hemiLight );
 
 	// SKYDOME
 
@@ -500,7 +500,7 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 			const spotLightHelper = new THREE.SpotLightHelper( mLight );
 			lighthelpers.push(spotLightHelper);
 			scene.add(mLight);
-			scene.add( spotLightHelper );
+			//scene.add( spotLightHelper );
 
 			mface.visible = false;
 			break;
@@ -532,6 +532,7 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 	edgeom.applyMatrix4(mrot);
 	//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 	var lines = new THREE.LineSegments( edgeom,linemat );
+	lines.visible = mface.visible;
 	scene.add( lines );
 }
 }
