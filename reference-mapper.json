@@ -1,34 +1,5 @@
 {
-    "materials":[{
-        "pattern":{
-            "prefix": "",
-            "sufix": "",
-            "contains":"",
-            "equals":"TV"
-        },
-        "emissionintensity":0,
-        "emissioncolor":"#ffffff",
-        "videotexture":false,
-        "videosource":"",
-        "shininess":0,
-        "roughness":0
-    },
-    {
-        "pattern":{
-            "prefix": "",
-            "sufix": "",
-            "contains":"apagar",
-            "equals":""
-        },
-        "emissionintensity":0,
-        "emissioncolor":"#ffffff",
-        "videotexture":false,
-        "videosource":"",
-        "shininess":0,
-        "roughness":0,
-        "removemesh":true,
-        "light":true
-    },
+    "materials":[
     {
         "pattern":{
             "prefix": "led",
