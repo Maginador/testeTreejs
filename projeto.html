@@ -98,6 +98,7 @@
 
 
   async function init() {
+	const loader = new THREE.TextureLoader();
 
     // init three
     if (window.WebGLRenderingContext) {
@@ -140,17 +141,16 @@
 	light2.target.position.set(tpos);
 
 light2.castShadow = true;
-light2.shadowCameraNear = scene_length / 2 * 0.85;
-light2.shadowCameraFar = scene_length / 2 * 1.15;
-light2.shadowCameraRight = scene_length/15;
-light2.shadowCameraLeft = -scene_length/15;
-light2.shadowCameraTop	= scene_length/15;
-light2.shadowCameraBottom = -scene_length/15;
-light2.shadowCameraFov = 1.0;
-light2.shadowCameraVisible = true;
-light2.shadowBias = 0.0001;
-light2.shadowMapWidth = 2048;
-light2.shadowMapHeight = 2048;
+light2.shadow.camera.near = scene_length / 2 * 0.85;
+light2.shadow.camera.far = scene_length / 2 * 1.15;
+light2.shadow.camera.right = scene_length/15;
+light2.shadow.camera.left = -scene_length/15;
+light2.shadow.camera.top	= scene_length/15;
+light2.shadow.camera.Bottom = -scene_length/15;
+light2.shadow.camera.fov = 1.0;
+light2.shadow.bias = 0.0001;
+light2.shadow.mapSize.width = 2048;
+light2.shadow.mapSize.height = 2048;
 
     //scene.add( light2 );
 	
@@ -353,7 +353,7 @@ light2.shadowMapHeight = 2048;
 		].join( "\n" )
 	  });
 		if(mat[i][2] !="" ){
-			var texture  = new THREE.ImageUtils.loadTexture(tex[i]);
+			var texture = await loader.load(tex[i]);
 			texture.magFilter = THREE.NearestFilter;
 			texture.minFilter = THREE.NearestFilter;
 			texture.wrapS = THREE.RepeatWrapping;
