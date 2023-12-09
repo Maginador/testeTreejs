@@ -18,10 +18,10 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
     //Bloom parameters
     const params = {
-        threshold: 0,
-        strength: 1,
-        radius: 0.5,
-        exposure: 1
+        threshold: 0, //filtro de branco
+        strength: 1, // Intensidade
+        radius: 0.5, // tamanho 
+        exposure: 1 // quantidade de claridade
     };
 
     const renderScene = new RenderPass(scene, camera);
@@ -57,10 +57,14 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
 }
 window.darkenNonBloomed = function darkenNonBloomed(obj) {
-    if(obj.isMesh && obj.material.length>1){
-        materials[ obj.uuid ] = obj.material;
-        obj.material = materialsPBRDark;
-
+    if(obj.isMesh ){
+        if(obj.material.length>1){
+            materials[ obj.uuid ] = obj.material;
+            obj.material = materialsPBRDark;
+        }else{
+            materials[ obj.uuid ] = obj.material;
+            obj.material = darkMaterial;
+        }
     }
 }
 

@@ -2,6 +2,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0.1//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
+<link rel="stylesheet" href="src/style.css">
+
 <meta http-equiv="Content-Type" Content="text/html;charset=UTF-8">
 <TITLE>VISUALIZADOR 3D - SEU PRODUTO 360</TITLE>
 <!--
@@ -15,7 +17,6 @@
 		  <script src="projetogeom.js"></script>      
 		
 		  <script src="mapper.js"></script> 
-		  <script src="ruler.js"></script>
 		  <script type="x-shader/x-vertex" id="bloom-vertexshader">
 
 			varying vec2 vUv;
@@ -84,6 +85,7 @@
 	}
   </script>
 <script src="/bloomhandler.js" type="module"></script>
+<script src="/ruler.js" type="module"></script>
 
 <script id="main_wgl" type="text/javascript" >
   var materials = [];
@@ -96,9 +98,10 @@
   // 
   const BLOOM_SCENE = 1;
   const lightsList = [];
-
+ let rulerAddPoint = false;
 
   async function init() {
+
 	const loader = new THREE.TextureLoader();
 
     // init three
@@ -220,7 +223,6 @@ light2.shadow.mapSize.height = 2048;
 
 		//enable ruler when clicking
 		//TODO improve user experience with ui command and proper event 
-		RulerRaycast(camera, scene);
 	}, true); 
 
 	codeclips = "vec3 clipDIST = vec3( 3908.220,452.000,3908.220 ) + vec3(40,40,40);vec3 clipBASE = vec3( -1954.110,-0.000,-1836.626 ) - vec3(20,20,20);"
@@ -649,6 +651,11 @@ case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];bre
     // 画面リサイズ時のイベント
     window.addEventListener( 'resize', onWindowResize, false );
 	window.ApplyBloom(scene,renderer);
+	var sceneArray = [];
+	for(let i = 0; i<scene.children.length; i++)
+		sceneArray.push(scene.children[i]);
+	window.sceneObjects = sceneArray;
+
 	}
 
 	function computeVertexMiddle(geom){
@@ -696,9 +703,10 @@ function texture_show(chk){
 			scene.background = new THREE.Color(0xffffff);
 			window.finalComposer.render();
 		}
+		if(rulerAddPoint)RulerRaycast(camera, scene);
+
 
   }
-
 </script>
 </head>
 <body onload="main_wgl();" style="overflow: hidden;height: 100%;">
@@ -706,6 +714,13 @@ function texture_show(chk){
   <div id="menu"> </div>
   <video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
 </video>
+<a class="floatPlus" id="plus">
+	<i class="float">+</i>
+</a>
+<a class="floatMinus" id="minus">
+	<i class="float">-</i>
+</a>
+
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js" integrity="sha384-THVO/sM0mFD9h7dfSndI6TS0PgAGavwKvB5hAxRRvc0o9cPLohB0wb/PTA7LdUHs" crossorigin="anonymous"></script>
 
@@ -756,5 +771,11 @@ function criarPdf() {
 	doc.output('save', 'meu-melhor-projeto.pdf');
 			
 }		
+document.getElementById("plus").addEventListener("click",EnableRuler);
+function EnableRuler(){ 
+	rulerAddPoint = true;
+	console.log("teste");
+
+  }
 </script>
 </html>
