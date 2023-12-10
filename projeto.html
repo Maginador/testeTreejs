@@ -675,7 +675,7 @@ case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];bre
     //render();
   }
 function texture_show(chk){
-	console.log(mat);
+	//console.log(mat);
     for(var i=0; i < mat.length; i++){
       if (mat[i][2] != ""){
         // texture付material：画像をLoad
@@ -717,8 +717,16 @@ function texture_show(chk){
 <a class="floatPlus" id="plus">
 	<i class="float">+</i>
 </a>
-<a class="floatMinus" id="minus">
+<!--0a class="floatMinus" id="minus">
 	<i class="float">-</i>
+</a>-->
+<a class="boxRoot" id="boxBase">
+	<div class="box">List of Measures</div>
+	<div class="boxX" id="boxClose">X</div>
+	<div class="listContainer">
+		<div class="list" id="measureList"></div>
+		<div class="listClose" id="closeList"></div>
+	</div>
 </a>
 
 </body>
@@ -774,8 +782,7 @@ function criarPdf() {
 document.getElementById("plus").addEventListener("click",EnableRuler);
 function EnableRuler(){ 
 	rulerAddPoint = true;
-	console.log("teste");
-
+	window.boxBase.style.display = "inline"
   }
 </script>
 </html>
