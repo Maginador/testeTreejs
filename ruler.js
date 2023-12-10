@@ -2,7 +2,6 @@ import * as THREE from 'three';
 
 let boxClose;
 let vertexList = [];
-let linesList = [];
 let metricsList = [];
 let measureListElement;
 let closeListElement;
@@ -158,7 +157,7 @@ function RemoveElement(index){
    measureList[index].remove();
    scene.remove(metricsList[index].marker1);
    scene.remove(metricsList[index].marker2);
-   scene.remove(linesList[index]);
+   scene.remove(metricsList[index].line);
    delete closeList[index];
    delete measureList[index];
    delete metricsList[index];
@@ -238,8 +237,8 @@ function onClick(event) {
 
                 const m1= markers[markers.length - 1];
                 const m2= markers[markers.length - 2];
-                linesList.push(AddLine(v1, v2));
-                metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1:m1, point2: v2, marker2:m2 });
+                const line = AddLine(v1, v2);
+                metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1:m1, point2: v2, marker2:m2, line:line });
                 UpdateFields();
                 HideSphere();
 
