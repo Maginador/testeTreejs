@@ -4,39 +4,41 @@ async function GetMapperJson(){
     const json = await response.json();
     return json;
 }
-function BuildLight(json){
 
-    let lightsRawData = json.lights;
-
-lightsRawData.forEach(element => {
-    let light;
-    switch(element.type){
-        case "point": 
-        default :
-            light = new THREE.PointLight(element.color);
-            break;
-        case "spot" : 
-            light = new THREE.SpotLight(element.color);
-            break;
-        case "hemisphere":
-            light = new THREE.HemisphereLight(element.color);
-            break;
-        
+function ValidatePattern(pattern, src){
+    var result = false;
+    if((pattern.prefix && src.startsWith(pattern.prefix)) || 
+    (pattern.sufix && src.endsWith(pattern.sufix)) || 
+    (pattern.contains && src.includes(pattern.contains)) ||
+    (pattern.equals && src === pattern.equals)){
+        result = true;
     }
-    //TODO Verify if it is possible to store the data directly from exporter
-    light.position.set(element.position.x,element.position.y,element.position.z)
-    light.intensity = element.intensity;
-});
+
+    return result;
+}
+async function MapLightsMaterials(src){
+    for(let i = 0; i<jsonLights.length; i++){
+        if(ValidatePattern(jsonLights[i].pattern,src)){
+            return jsonLights[i]
+        }  
+    }
+    return null;
+}
+
+async function MapLights(src, position){
+    for(let i = 0; i<jsonMaterials.length; i++){
+        if(ValidatePattern(jsonMaterials[i].pattern,src)){
+            light = await BuildLight(jsonMaterials[i], position);
+        }  
+    }
+    return light;
 }
 
 async function MapMaterial(src){
 
     let mat = BuildDefaultMaterial();
     for(let i = 0; i<jsonMaterials.length; i++){
-        if(src.startsWith(jsonMaterials[i].pattern.prefix) || 
-        src.endsWith(jsonMaterials[i].pattern.sufix) || 
-        src.includes(jsonMaterials[i].pattern.contains) ||
-        src === jsonMaterials[i].pattern.equals){
+        if(ValidatePattern(jsonMaterials[i].pattern,src)){
             mat = await BuildMaterial(jsonMaterials[i]);
         }  
     }
@@ -50,6 +52,33 @@ function BuildDefaultMaterial(){
 
     return mat;
 }
+
+async function BuildLight(lightData, position){
+    let light;
+    switch(lightData.type){
+        case "point": 
+        default :
+            light = new THREE.PointLight(lightData.color);
+            break;
+        case "spot" : 
+            light = new THREE.SpotLight(lightData.color);
+            break;
+        case "hemisphere":
+            light = new THREE.HemisphereLight(lightData.color);
+            break;
+        
+    }
+
+    light.position.set(position.x,position.y,position.z);
+    light.angle = Math.PI/lightData.angle ;
+    const targetObject = new THREE.Object3D(); 
+    targetObject.position.set (position.x+lightData.targetoffset.x, position.y+lightData.targetoffset.y, position.z+lightData.targetoffset.z);
+    scene.add(targetObject);     
+    light.target = targetObject;
+    light.intensity = lightData.intensity;
+
+    return light;
+}
 async function BuildMaterial(material){
     let mat = new THREE.MeshStandardMaterial();
     mat.emissive = new THREE.Color(material.emissioncolor);
@@ -61,11 +90,16 @@ async function BuildMaterial(material){
         texture.colorSpace = THREE.SRGBColorSpace;
         mat.map = texture;
     }
+    mat.bloom = material.bloom;
+    if(material.removemesh) mat.opacity = 0;
     return mat; 
 }
 let jsonData;
 let jsonMaterials;
+let jsonLights;
+
 async function InitMapper(){
     jsonData = await GetMapperJson();
-    jsonMaterials = jsonData.materials;    
+    jsonMaterials = jsonData.materials; 
+    jsonLights = jsonData.lights;   
 }

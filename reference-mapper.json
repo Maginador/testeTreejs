@@ -1,23 +1,25 @@
 {
-    "materials":[{
+    "materials":[
+    {
         "pattern":{
-            "prefix": "_",
-            "sufix": "_",
-            "contains":"test",
-            "equals":"TV"
+            "prefix": "led",
+            "sufix": "",
+            "contains":"",
+            "equals":""
         },
-        "emissionintensity":0,
+        "emissionintensity":0.3,
         "emissioncolor":"#ffffff",
         "videotexture":false,
         "videosource":"",
         "shininess":0,
-        "roughness":0
+        "roughness":0,
+        "bloom":true
     },
     {
         "pattern":{
-            "prefix": "---",
-            "sufix": "---",
-            "contains":"---",
+            "prefix": "",
+            "sufix": "",
+            "contains":"",
             "equals":"0312b453-cd67-41e3-8f2c-13656761b841_5"
         },
         "emissionintensity":0,
@@ -30,16 +32,19 @@
     "lights":[
         {
             "pattern":{
-            "prefix": "_",
-            "sufix": "_",
-            "contains":"test",
-            "equals":"TV"
+            "prefix": "",
+            "sufix": "",
+            "contains":"apagar",
+            "equals":""
             },
-            "type":"point",
-            "position":{"x":0,"y":0,"z":0 },
-            "intensity" : 0.5,
-            "color" : "0xffffff",
-            "range": 1.0
+            "removemesh":true,
+            "type":"spot",
+            "intensity" : 0.1,
+            "color" : "#ffffff",
+            "range": 1.0,
+            "angle":3,
+            "targetoffset":{"x":0,"y":-100,"z":0}
         }
+
     ]
 }
