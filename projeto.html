@@ -229,6 +229,7 @@ light2.shadow.mapSize.height = 2048;
     for(var i=0; i < mat.length; i++){
 
 	const tempMaterial = await MapMaterial(mat[i][3].toLowerCase())
+	
 	const tempLightData = await MapLightsMaterials(mat[i][3].toLowerCase()); 
 	if(tempLightData){
 		tempMaterial.isLight = true;
@@ -675,7 +676,7 @@ case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];bre
     //render();
   }
 function texture_show(chk){
-	//console.log(mat);
+	console.log(mat);
     for(var i=0; i < mat.length; i++){
       if (mat[i][2] != ""){
         // texture付material：画像をLoad

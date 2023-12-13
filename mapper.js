@@ -4,13 +4,14 @@ async function GetMapperJson(){
     const json = await response.json();
     return json;
 }
+const loader = new THREE.TextureLoader();
 
 function ValidatePattern(pattern, src){
     var result = false;
-    if((pattern.prefix && src.startsWith(pattern.prefix)) || 
-    (pattern.sufix && src.endsWith(pattern.sufix)) || 
-    (pattern.contains && src.includes(pattern.contains)) ||
-    (pattern.equals && src === pattern.equals)){
+    if((pattern.prefix.toLowerCase() && src.startsWith(pattern.prefix)) || 
+    (pattern.sufix.toLowerCase() && src.endsWith(pattern.sufix)) || 
+    (pattern.contains.toLowerCase() && src.includes(pattern.contains)) ||
+    (pattern.equals.toLowerCase() && src === pattern.equals)){
         result = true;
     }
 
@@ -80,9 +81,8 @@ async function BuildLight(lightData, position){
     return light;
 }
 async function BuildMaterial(material){
+
     let mat = new THREE.MeshStandardMaterial();
-    mat.emissive = new THREE.Color(material.emissioncolor);
-    mat.emissiveIntensity = parseFloat(material.emissionintensity);
     if(material.videotexture){
         let video = document.getElementById( 'video' );
         video.src = "./" + material.videosource;
@@ -90,7 +90,15 @@ async function BuildMaterial(material){
         texture.colorSpace = THREE.SRGBColorSpace;
         mat.map = texture;
     }
+
+    //PBR parameters
     mat.bloom = material.bloom;
+
+    //maps
+    mat = await ProcessMaps(mat,material);
+
+    //properties
+    mat = ProcessProperties(mat,material);
     if(material.removemesh) mat.opacity = 0;
     return mat; 
 }
@@ -98,6 +106,64 @@ let jsonData;
 let jsonMaterials;
 let jsonLights;
 
+function ProcessProperties(mat, material){
+    if(material.aomapintensity) mat.aoMapIntensity  = parseFloat(material.aomapintensity);
+    if(material.bumpscale ) mat.bumpScale  = parseFloat(material.bumpscale);
+    if(material.displacementscale ) mat.displacementScale  = parseFloat(material.displacementscale);
+    if(material.emissioncolor )mat.emissive = new THREE.Color(material.emissioncolor);
+    if(material.emissionintensity )mat.emissiveIntensity = parseFloat(material.emissionintensity);
+    if(material.envmapintensity )mat.envMapIntensity = parseFloat(material.envmapintensity);
+    if(material.lightmapintensity )mat.lightMapIntensity = parseFloat(material.lightmapintensity);
+    if(material.metalness )mat.metalness = parseFloat(material.metalness);
+    if(material.roughness )mat.roughness = parseFloat(material.roughness);
+    return mat;
+}
+async function ProcessMaps(mat, material){
+
+    if(material.bumpmap){
+        var texture = await loader.load(material.bumpmap);
+        mat.bumpMap = texture;
+    }
+    if(material.normalmap){
+        var texture = await loader.load(material.normalmap);
+        mat.normalMap = texture;
+    }
+
+    if(material.aomap){
+        var texture = await loader.load(material.aomap);
+        mat.aoMap = texture;
+    }
+
+    if(material.alphamap){
+        var texture = await loader.load(material.alphamap);
+        mat.alphaMap = texture;
+    }
+    if(material.displacementmap){
+        var texture = await loader.load(material.displacementmap);
+        mat.displacementMap = texture;
+    }
+    if(material.emissivemap){
+        var texture = await loader.load(material.emissivemap);
+        mat.emissiveMap = texture;
+    }
+    if(material.envmap){
+        var texture = await loader.load(material.envmap);
+        mat.envMap = texture;
+    }
+    if(material.lightmap){
+        var texture = await loader.load(material.lightmap);
+        mat.lightMap = texture;
+    }
+    if(material.metalnessmap){
+        var texture = await loader.load(material.metalnessmap);
+        mat.metalnessMap = texture;
+    }
+    if(material.roughnessmap){
+        var texture = await loader.load(material.roughnessmap);
+        mat.roughnessMap = texture;
+    }
+    return mat;
+}
 async function InitMapper(){
     jsonData = await GetMapperJson();
     jsonMaterials = jsonData.materials; 
