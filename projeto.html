@@ -247,7 +247,7 @@ light2.shadow.mapSize.height = 2048;
 	}
 	materialsPBR[i].color = new THREE.Color(mat[i][0]);
 	materialsPBR[i].opacity = mat[i][1];
-	//if(materialsPBR[i].light)materialsPBR[i].color = new THREE.Color(0x000000);
+	if(materialsPBR[i].light)materialsPBR[i].color = new THREE.Color(0x000000);
      materials[i] = new THREE.ShaderMaterial( {
 		uniforms: THREE.UniformsUtils.merge([
 			THREE.UniformsLib[ "common" ],
@@ -482,9 +482,11 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 		}
     }
 	
+
+	geom.computeVertexNormals();
+	geom.computeFaceNormals();
 	geom.applyMatrix4(matrix);
 	geom.applyMatrix4(mrot);
-    geom.computeFaceNormals();
 	//geom.translate(mtx[12],-mtx[13],-mtx[14]);
     //geom.computeVertexNormals();
     mface = new THREE.Mesh(geom, materialsPBR);

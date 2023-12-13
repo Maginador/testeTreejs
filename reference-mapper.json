@@ -7,11 +7,10 @@
                 "contains": "branco",
                 "equals": ""
             },
-            "bumpmap": "/gl_image/bumpmap.jpeg",
-            "bumpscale": 2,
-            "metalness": 0.5,
-            "roughness": 0.6
-        },
+            "envmap":"gl_image/cenario.jpg",
+            "envmapintensity":"1",
+            "metalness":0.4
+                },
         {
             "pattern": {
                 "prefix": "led",
