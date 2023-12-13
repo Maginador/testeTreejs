@@ -1,50 +1,58 @@
 {
-    "materials":[
-    {
-        "pattern":{
-            "prefix": "led",
-            "sufix": "",
-            "contains":"",
-            "equals":""
-        },
-        "emissionintensity":0.3,
-        "emissioncolor":"#ffffff",
-        "videotexture":false,
-        "videosource":"",
-        "shininess":0,
-        "roughness":0,
-        "bloom":true
-    },
-    {
-        "pattern":{
-            "prefix": "",
-            "sufix": "",
-            "contains":"",
-            "equals":"0312b453-cd67-41e3-8f2c-13656761b841_5"
-        },
-        "emissionintensity":0,
-        "emissioncolor":"#ffffff",
-        "videotexture":true,
-        "videosource":"video.mp4",
-        "shininess":0,
-        "roughness":0
-    }],
-    "lights":[
+    "materials": [
         {
-            "pattern":{
-            "prefix": "",
-            "sufix": "",
-            "contains":"apagar",
-            "equals":""
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "branco",
+                "equals": ""
             },
-            "removemesh":true,
-            "type":"spot",
-            "intensity" : 0.1,
-            "color" : "#ffffff",
-            "range": 1.0,
-            "angle":3,
-            "targetoffset":{"x":0,"y":-100,"z":0}
+            "bumpmap": "/gl_image/bumpmap.jpeg",
+            "bumpscale": 2,
+            "metalness": 0.5,
+            "roughness": 0.6
+        },
+        {
+            "pattern": {
+                "prefix": "led",
+                "sufix": "",
+                "contains": "",
+                "equals": ""
+            },
+            "emissionintensity": 0.3,
+            "emissioncolor": "#ffffff",
+            "bloom": true
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "",
+                "equals": "0312b453-cd67-41e3-8f2c-13656761b841_5"
+            },
+            "videotexture": true,
+            "videosource": "video.mp4"
         }
-
+    ],
+    "lights": [
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "apagar",
+                "equals": ""
+            },
+            "removemesh": true,
+            "type": "spot",
+            "intensity": 0.05,
+            "color": "#ffffff",
+            "range": 1.0,
+            "angle": 3,
+            "targetoffset": {
+                "x": 0,
+                "y": -100,
+                "z": 0
+            }
+        }
     ]
 }
