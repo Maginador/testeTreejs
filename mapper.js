@@ -125,28 +125,46 @@ async function ProcessMaps(mat, material) {
 
     if (material.bumpmap) {
         var texture = await loader.load(material.bumpmap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.bumpMap = texture;
     }
     if (material.normalmap) {
         var texture = await loader.load(material.normalmap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.normalMap = texture;
     }
 
     if (material.aomap) {
         var texture = await loader.load(material.aomap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.aoMap = texture;
     }
 
     if (material.alphamap) {
         var texture = await loader.load(material.alphamap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.alphaMap = texture;
     }
     if (material.displacementmap) {
         var texture = await loader.load(material.displacementmap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.displacementMap = texture;
     }
     if (material.emissivemap) {
         var texture = await loader.load(material.emissivemap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.emissiveMap = texture;
     }
     if (material.envmap) {
@@ -163,14 +181,23 @@ async function ProcessMaps(mat, material) {
     }
     if (material.lightmap) {
         var texture = await loader.load(material.lightmap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.lightMap = texture;
     }
     if (material.metalnessmap) {
         var texture = await loader.load(material.metalnessmap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.metalnessMap = texture;
     }
     if (material.roughnessmap) {
         var texture = await loader.load(material.roughnessmap);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1,1);
         mat.roughnessMap = texture;
     }
     return mat;
