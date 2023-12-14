@@ -2,6 +2,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0.1//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
+<link rel="stylesheet" href="src/style.css">
+
 <meta http-equiv="Content-Type" Content="text/html;charset=UTF-8">
 <TITLE>VISUALIZADOR 3D - SEU PRODUTO 360</TITLE>
 <!--
@@ -14,8 +16,35 @@
 		  <script src='DAT.GUI.min.js'></script>
 		  <script src="projetogeom.js"></script>      
 		
-		  <script src="mapper.js"></script>
+		  <script src="mapper.js"></script> 
+		  <script type="x-shader/x-vertex" id="bloom-vertexshader">
 
+			varying vec2 vUv;
+
+			void main() {
+
+				vUv = uv;
+
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="bloom-fragmentshader">
+
+			uniform sampler2D baseTexture;
+			uniform sampler2D bloomTexture;
+
+			varying vec2 vUv;
+
+			void main() {
+
+				gl_FragColor = ( texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ) );
+
+			}
+
+		</script>		  
 <script type="x-shader/x-vertex" id="vertexShader">
 
 	varying vec3 vWorldPosition;
@@ -48,14 +77,32 @@
 	}
 
 </script>
+<script type="importmap">
+	{
+	  "imports": {
+		"three": "/build/three.module.js"
+		}
+	}
+  </script>
+<script src="/bloomhandler.js" type="module"></script>
+<script src="/ruler.js" type="module"></script>
+
 <script id="main_wgl" type="text/javascript" >
   var materials = [];
   var materialsPBR = [];
+  var materialsPBRDark = [];
+  var lighthelpers = [];
   var clipMAX = 100.0;
   var clipMIN = 0.0;
   var camera,headlight;
   // 
+  const BLOOM_SCENE = 1;
+  const lightsList = [];
+ let rulerAddPoint = false;
+
   async function init() {
+
+	const loader = new THREE.TextureLoader();
 
     // init three
     if (window.WebGLRenderingContext) {
@@ -64,8 +111,7 @@
         renderer = new THREE.CanvasRenderer();
     }
 	var chk_tex_ok = false;
-
-    // viewport of WebGL
+	// viewport of WebGL
 	aspr = window.innerWidth/ window.innerHeight;
     renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
@@ -74,9 +120,9 @@
     // background color
     renderer.setClearColor(0x606069, 1.0);
 	//enable shadowmap
-renderer.autoClear = false;
-renderer.shadowMap.enabled = false;
-renderer.shadowMap.type = THREE.PCFShadowMap;
+	renderer.autoClear = false;
+	renderer.shadowMap.enabled = false;
+	renderer.shadowMap.type = THREE.PCFShadowMap;
 
     // init scene
     scene = new THREE.Scene();
@@ -85,7 +131,7 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 	var scene_length = 55455;
     camera = new THREE.PerspectiveCamera(50, aspr, 10, scene_length);
     scene.add(camera);
-
+	
     // init 環境光　
     light1 = new THREE.AmbientLight(0xbbbbbb);
     scene.add( light1 );
@@ -99,19 +145,18 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 	light2.target.position.set(tpos);
 
 light2.castShadow = true;
-light2.shadowCameraNear = scene_length / 2 * 0.85;
-light2.shadowCameraFar = scene_length / 2 * 1.15;
-light2.shadowCameraRight = scene_length/15;
-light2.shadowCameraLeft = -scene_length/15;
-light2.shadowCameraTop	= scene_length/15;
-light2.shadowCameraBottom = -scene_length/15;
-light2.shadowCameraFov = 1.0;
-light2.shadowCameraVisible = true;
-light2.shadowBias = 0.0001;
-light2.shadowMapWidth = 2048;
-light2.shadowMapHeight = 2048;
+light2.shadow.camera.near = scene_length / 2 * 0.85;
+light2.shadow.camera.far = scene_length / 2 * 1.15;
+light2.shadow.camera.right = scene_length/15;
+light2.shadow.camera.left = -scene_length/15;
+light2.shadow.camera.top	= scene_length/15;
+light2.shadow.camera.Bottom = -scene_length/15;
+light2.shadow.camera.fov = 1.0;
+light2.shadow.bias = 0.0001;
+light2.shadow.mapSize.width = 2048;
+light2.shadow.mapSize.height = 2048;
 
-    scene.add( light2 );
+    //scene.add( light2 );
 	
     light3 = new THREE.DirectionalLight(0x333333, 1.0);
     light3.position.set(-sunvec.x,-sunvec.y,-sunvec.z);
@@ -143,7 +188,7 @@ light2.shadowMapHeight = 2048;
 	skyGeo.translate(tpos.x,tpos.y,tpos.z);
 	var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
 	var sky = new THREE.Mesh( skyGeo, skyMat );
-	scene.add( sky );
+	//scene.add( sky );
 	
     // init controls : use OrbitControls.js
     controls = new THREE.OrbitControlsTH(camera, renderer.domElement);
@@ -176,17 +221,33 @@ light2.shadowMapHeight = 2048;
 		let video = document.getElementById( 'video' );
 		video.play();
 
+		//enable ruler when clicking
+		//TODO improve user experience with ui command and proper event 
 	}, true); 
 
 	codeclips = "vec3 clipDIST = vec3( 3908.220,452.000,3908.220 ) + vec3(40,40,40);vec3 clipBASE = vec3( -1954.110,-0.000,-1836.626 ) - vec3(20,20,20);"
     for(var i=0; i < mat.length; i++){
 
-	const tempMaterial = await MapMaterial(mat[i][3])
+	const tempMaterial = await MapMaterial(mat[i][3].toLowerCase())
+	
+	const tempLightData = await MapLightsMaterials(mat[i][3].toLowerCase()); 
+	if(tempLightData){
+		tempMaterial.isLight = true;
+		tempMaterial.json = tempLightData;
+		tempLightData.referenceMaterial = tempMaterial;
+		lightsList.push (tempLightData);
+	}
+	
+
 	materialsPBR[i] = tempMaterial;
+	if(!tempMaterial.bloom){
+		materialsPBRDark[i] = new THREE.MeshBasicMaterial({ color: 'black' });
+	}else{
+		materialsPBRDark[i] = tempMaterial;
+	}
 	materialsPBR[i].color = new THREE.Color(mat[i][0]);
 	materialsPBR[i].opacity = mat[i][1];
-
-
+	if(materialsPBR[i].light)materialsPBR[i].color = new THREE.Color(0x000000);
      materials[i] = new THREE.ShaderMaterial( {
 		uniforms: THREE.UniformsUtils.merge([
 			THREE.UniformsLib[ "common" ],
@@ -299,7 +360,7 @@ light2.shadowMapHeight = 2048;
 		].join( "\n" )
 	  });
 		if(mat[i][2] !="" ){
-			var texture  = new THREE.ImageUtils.loadTexture(tex[i]);
+			var texture = await loader.load(tex[i]);
 			texture.magFilter = THREE.NearestFilter;
 			texture.minFilter = THREE.NearestFilter;
 			texture.wrapS = THREE.RepeatWrapping;
@@ -397,6 +458,7 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 			}
 		}
 		var mati = geomlist[k].mti[j];
+
 		if( mati == 0 ){ //mati = dfmatid; }
 			fc = new THREE.Face3( parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, dfmatid );
 			geom.faces.push(fc);
@@ -420,16 +482,47 @@ mtx[3]/mtx[15],mtx[7]/mtx[15],mtx[11]/mtx[15],1.0
 		}
     }
 	
+
+	geom.computeVertexNormals();
+	geom.computeFaceNormals();
 	geom.applyMatrix4(matrix);
 	geom.applyMatrix4(mrot);
-    geom.computeFaceNormals();
 	//geom.translate(mtx[12],-mtx[13],-mtx[14]);
-	
     //geom.computeVertexNormals();
     mface = new THREE.Mesh(geom, materialsPBR);
-mface.castShadow = true;
-mface.receiveShadow = true;
-    scene.add( mface );
+	mface.castShadow = true;
+	mface.receiveShadow = true;
+
+	for(var j=0; j < geomlist[k].nf; j++){
+
+		var mati = geomlist[k].mti[j];
+		if(mati === 0) mati = dfmatid;
+		if(materialsPBR[mati].isLight){
+			//mface.material = null;
+			var vertexMiddle = computeVertexMiddle(geom);
+ 			var mLight = await BuildLight(materialsPBR[mati].json,vertexMiddle);
+
+			const spotLightHelper = new THREE.SpotLightHelper( mLight );
+			lighthelpers.push(spotLightHelper);
+			scene.add(mLight);
+			//scene.add( spotLightHelper );
+
+			mface.visible = false;
+			break;
+		}
+
+		if(materialsPBR[mati].bloom){
+			const bloomLayer = new THREE.Layers();
+			bloomLayer.set( BLOOM_SCENE );
+			mface.customProp = BLOOM_SCENE;
+		}else{
+			mface.customProp = undefined;
+
+		}
+	
+	}
+	scene.add( mface );
+
 	var edgeom = new THREE.Geometry();
     for(var j=0; j < geomlist[k].ne; j++){
 		if(geomlist[k].ed[j]){
@@ -444,6 +537,7 @@ mface.receiveShadow = true;
 	edgeom.applyMatrix4(mrot);
 	//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 	var lines = new THREE.LineSegments( edgeom,linemat );
+	lines.visible = mface.visible;
 	scene.add( lines );
 }
 }
@@ -559,8 +653,23 @@ case "Cena6":cpos=[-2122.484,175.341,-51.243];ctgt=[288.300,175.341,-51.243];bre
     //scene.add( objects );
     // 画面リサイズ時のイベント
     window.addEventListener( 'resize', onWindowResize, false );
-  }
+	window.ApplyBloom(scene,renderer);
+	var sceneArray = [];
+	for(let i = 0; i<scene.children.length; i++)
+		sceneArray.push(scene.children[i]);
+	window.sceneObjects = sceneArray;
 
+	}
+
+	function computeVertexMiddle(geom){
+		var x=0,y=0,z=0;
+		for(var i =0; i< geom.vertices.length;i++){
+			x += geom.vertices[i].x;
+			y += geom.vertices[i].y;
+			z += geom.vertices[i].z;
+		}
+		return new THREE.Vector3(x/geom.vertices.length, y/geom.vertices.length, z/geom.vertices.length);
+	}
   // ウィンドウリサイズ時の動作
   function onWindowResize() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
@@ -585,13 +694,22 @@ function texture_show(chk){
       }
     }
 }
-  // 
   function render() {
     requestAnimationFrame(render);
     if(controls)controls.update();
-    renderer.render(scene, camera);
-  }
+		//renderer.render(scene, camera);
+		if(window.bloomComposer){
+			scene.traverse( window.darkenNonBloomed );
+			scene.background = new THREE.Color(0x000000);
+			bloomComposer.render();
+			scene.traverse( window.restoreMaterial );
+			scene.background = new THREE.Color(0xffffff);
+			window.finalComposer.render();
+		}
+		if(rulerAddPoint)RulerRaycast(camera, scene);
 
+
+  }
 </script>
 </head>
 <body onload="main_wgl();" style="overflow: hidden;height: 100%;">
@@ -599,6 +717,21 @@ function texture_show(chk){
   <div id="menu"> </div>
   <video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
 </video>
+<a class="floatPlus" id="plus">
+	<i class="float">+</i>
+</a>
+<!--0a class="floatMinus" id="minus">
+	<i class="float">-</i>
+</a>-->
+<a class="boxRoot" id="boxBase">
+	<div class="box">List of Measures</div>
+	<div class="boxX" id="boxClose">X</div>
+	<div class="listContainer">
+		<div class="list" id="measureList"></div>
+		<div class="listClose" id="closeList"></div>
+	</div>
+</a>
+
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js" integrity="sha384-THVO/sM0mFD9h7dfSndI6TS0PgAGavwKvB5hAxRRvc0o9cPLohB0wb/PTA7LdUHs" crossorigin="anonymous"></script>
 
@@ -649,5 +782,10 @@ function criarPdf() {
 	doc.output('save', 'meu-melhor-projeto.pdf');
 			
 }		
+document.getElementById("plus").addEventListener("click",EnableRuler);
+function EnableRuler(){ 
+	rulerAddPoint = true;
+	window.boxBase.style.display = "inline"
+  }
 </script>
 </html>

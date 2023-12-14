@@ -35,6 +35,7 @@ async function MapLights(src, position) {
     return light;
 }
 
+
 async function MapMaterial(src) {
 
     let mat = BuildDefaultMaterial();
@@ -56,6 +57,7 @@ function BuildDefaultMaterial() {
 
 async function BuildLight(lightData, position) {
     let light, helper;
+
     switch (lightData.type) {
         case "point":
         default:
@@ -74,6 +76,7 @@ async function BuildLight(lightData, position) {
     }
     //Comment the line bellow to hide helper
     scene.add(helper);
+
 
     light.position.set(position.x, position.y, position.z);
     light.angle = Math.PI / lightData.angle;

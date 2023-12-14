@@ -1,45 +1,57 @@
 {
-    "materials":[{
-        "pattern":{
-            "prefix": "_",
-            "sufix": "_",
-            "contains":"test",
-            "equals":"TV"
-        },
-        "emissionintensity":0,
-        "emissioncolor":"#ffffff",
-        "videotexture":false,
-        "videosource":"",
-        "shininess":0,
-        "roughness":0
-    },
-    {
-        "pattern":{
-            "prefix": "---",
-            "sufix": "---",
-            "contains":"---",
-            "equals":"0312b453-cd67-41e3-8f2c-13656761b841_5"
-        },
-        "emissionintensity":0,
-        "emissioncolor":"#ffffff",
-        "videotexture":true,
-        "videosource":"video.mp4",
-        "shininess":0,
-        "roughness":0
-    }],
-    "lights":[
+    "materials": [
         {
-            "pattern":{
-            "prefix": "_",
-            "sufix": "_",
-            "contains":"test",
-            "equals":"TV"
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "branco",
+                "equals": ""
             },
-            "type":"point",
-            "position":{"x":0,"y":0,"z":0 },
-            "intensity" : 0.5,
-            "color" : "0xffffff",
-            "range": 1.0
+            "envmap":"gl_image/cenario.jpg",
+            "envmapintensity":"1",
+            "metalness":0.4
+                },
+        {
+            "pattern": {
+                "prefix": "led",
+                "sufix": "",
+                "contains": "",
+                "equals": ""
+            },
+            "emissionintensity": 0.3,
+            "emissioncolor": "#ffffff",
+            "bloom": true
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "",
+                "equals": "0312b453-cd67-41e3-8f2c-13656761b841_5"
+            },
+            "videotexture": true,
+            "videosource": "video.mp4"
+        }
+    ],
+    "lights": [
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "apagar",
+                "equals": ""
+            },
+            "removemesh": true,
+            "type": "spot",
+            "intensity": 0.05,
+            "color": "#ffffff",
+            "range": 1.0,
+            "angle": 3,
+            "targetoffset": {
+                "x": 0,
+                "y": -100,
+                "z": 0
+            }
         }
     ]
 }
