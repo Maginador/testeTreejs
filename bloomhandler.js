@@ -18,9 +18,9 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
     //Bloom parameters
     const params = {
-        threshold: 0, //filtro de branco
+        threshold: 0.01, //filtro de branco
         strength: 1, // Intensidade
-        radius: 0.5, // tamanho 
+        radius: 0.2, // tamanho 
         exposure: 1 // quantidade de claridade
     };
 
@@ -57,12 +57,12 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
 }
 window.darkenNonBloomed = function darkenNonBloomed(obj) {
-    if(obj.isMesh ){
-        if(obj.material.length>1){
-            materials[ obj.uuid ] = obj.material;
+    if (obj.isMesh) {
+        if (obj.material.length > 1) {
+            materials[obj.uuid] = obj.material;
             obj.material = materialsPBRDark;
-        }else{
-            materials[ obj.uuid ] = obj.material;
+        } else {
+            materials[obj.uuid] = obj.material;
             obj.material = darkMaterial;
         }
     }
@@ -70,9 +70,9 @@ window.darkenNonBloomed = function darkenNonBloomed(obj) {
 
 window.restoreMaterial = function restoreMaterial(obj) {
 
-    if ( materials[ obj.uuid ] ) {
+    if (materials[obj.uuid]) {
 
-        obj.material = materials[ obj.uuid ];
-        delete materials[ obj.uuid ];
+        obj.material = materials[obj.uuid];
+        delete materials[obj.uuid];
     }
 }

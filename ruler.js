@@ -56,7 +56,7 @@ function HideSphere() {
 }
 
 function MovePoint(point) {
-    if(metricsList.length >= 8) return;
+    if (metricsList.length >= 8) return;
     if (!refSphere) {
         const geometry = new THREE.SphereGeometry(markerSize, markerHsegments, markerWsegments);
         const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -125,7 +125,7 @@ function UpdateFields() {
     if (!measureListElement) {
         measureListElement = document.getElementById("measureList");
     }
-    if(!closeListElement){
+    if (!closeListElement) {
         closeListElement = document.getElementById("closeList");
     }
     var diff = metricsList.length - measureList.length;
@@ -145,33 +145,33 @@ function UpdateFields() {
     for (let i = 0; i < metricsList.length; i++) {
         measureList[i].textContent = metricsList[i].distance.toFixed(2) + 'cm';
         measureList[i].index = i;
-        measureList[i].addEventListener("mouseover",onMeasureMouseOver);
-        measureList[i].addEventListener("mouseout",onMeasureMouseOut);
+        measureList[i].addEventListener("mouseover", onMeasureMouseOver);
+        measureList[i].addEventListener("mouseout", onMeasureMouseOut);
         closeList[i].index = i;
-        closeList[i].id = "X"+i;
-        closeList[i].addEventListener("click",onCloseMeasureButton)
+        closeList[i].id = "X" + i;
+        closeList[i].addEventListener("click", onCloseMeasureButton)
     }
 }
-function RemoveElement(index){
-   closeList[index].remove();
-   measureList[index].remove();
-   scene.remove(metricsList[index].marker1);
-   scene.remove(metricsList[index].marker2);
-   scene.remove(metricsList[index].line);
-   delete closeList[index];
-   delete measureList[index];
-   delete metricsList[index];
-   var newCloseArray = [];
-   var newMeasureArray = [];
+function RemoveElement(index) {
+    closeList[index].remove();
+    measureList[index].remove();
+    scene.remove(metricsList[index].marker1);
+    scene.remove(metricsList[index].marker2);
+    scene.remove(metricsList[index].line);
+    delete closeList[index];
+    delete measureList[index];
+    delete metricsList[index];
+    var newCloseArray = [];
+    var newMeasureArray = [];
     var newMetricsArray = [];
-    for(let i =0; i < closeList.length; i++){
-        if(closeList[i]){
+    for (let i = 0; i < closeList.length; i++) {
+        if (closeList[i]) {
             newCloseArray.push(closeList[i]);
         }
-        if(measureList[i]){
+        if (measureList[i]) {
             newMeasureArray.push(measureList[i]);
         }
-        if(metricsList[i]){
+        if (metricsList[i]) {
             newMetricsArray.push(metricsList[i]);
         }
     }
@@ -181,43 +181,43 @@ function RemoveElement(index){
 
     UpdateFields();
 }
-function ResetHighlight(){
-    for(let i = 0; i<metricsList.length; i++){
+function ResetHighlight() {
+    for (let i = 0; i < metricsList.length; i++) {
 
         metricsList[i].marker1.material.color = new THREE.Color(0xffffff);
         metricsList[i].marker2.material.color = new THREE.Color(0xffffff);
-        metricsList[i].marker1.scale.set(1,1,1);
-        metricsList[i].marker2.scale.set(1,1,1);
-   }
+        metricsList[i].marker1.scale.set(1, 1, 1);
+        metricsList[i].marker2.scale.set(1, 1, 1);
+    }
 }
-function HighlightMarkers(index){
-   for(let i = 0; i<metricsList.length; i++){
+function HighlightMarkers(index) {
+    for (let i = 0; i < metricsList.length; i++) {
 
         metricsList[i].marker1.material.color = new THREE.Color(0xffffff);
         metricsList[i].marker2.material.color = new THREE.Color(0xffffff);
-        metricsList[i].marker1.scale.set(1,1,1);
-        metricsList[i].marker2.scale.set(1,1,1);
+        metricsList[i].marker1.scale.set(1, 1, 1);
+        metricsList[i].marker2.scale.set(1, 1, 1);
 
 
-   }
-   const highlightScale = 3;
-   const highlightColor = 0x00ff00;
-   metricsList[index].marker1.material.color = new THREE.Color(highlightColor);
-   metricsList[index].marker2.material.color = new THREE.Color(highlightColor);
-   metricsList[index].marker1.scale.set(highlightScale,highlightScale,highlightScale);
-   metricsList[index].marker2.scale.set(highlightScale,highlightScale,highlightScale);
+    }
+    const highlightScale = 3;
+    const highlightColor = 0x00ff00;
+    metricsList[index].marker1.material.color = new THREE.Color(highlightColor);
+    metricsList[index].marker2.material.color = new THREE.Color(highlightColor);
+    metricsList[index].marker1.scale.set(highlightScale, highlightScale, highlightScale);
+    metricsList[index].marker2.scale.set(highlightScale, highlightScale, highlightScale);
 
 }
-function onCloseMeasureButton(event){
+function onCloseMeasureButton(event) {
     var index = event.currentTarget.index;
     RemoveElement(index);
 }
-function onMeasureMouseOut(event){
-    ResetHighlight(); 
+function onMeasureMouseOut(event) {
+    ResetHighlight();
 }
-function onMeasureMouseOver(event){
-   var index = event.currentTarget.index;
-   HighlightMarkers(index);
+function onMeasureMouseOver(event) {
+    var index = event.currentTarget.index;
+    HighlightMarkers(index);
 }
 
 function OnMouseDown(event) {
@@ -235,10 +235,10 @@ function onClick(event) {
                 const v1 = vertexList[vertexList.length - 1];
                 const v2 = vertexList[vertexList.length - 2];
 
-                const m1= markers[markers.length - 1];
-                const m2= markers[markers.length - 2];
+                const m1 = markers[markers.length - 1];
+                const m2 = markers[markers.length - 2];
                 const line = AddLine(v1, v2);
-                metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1:m1, point2: v2, marker2:m2, line:line });
+                metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
                 UpdateFields();
                 HideSphere();
 
