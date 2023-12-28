@@ -57,7 +57,7 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
 }
 window.darkenNonBloomed = function darkenNonBloomed(obj) {
-    if(obj.isMesh ){
+    if(obj.isMesh || obj.isLine){
         if(obj.material.length>1){
             materials[ obj.uuid ] = obj.material;
             obj.material = materialsPBRDark;
