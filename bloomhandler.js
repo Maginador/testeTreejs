@@ -103,9 +103,9 @@ window.doRender = function doRender() {
     }
 }
 window.darkenNonBloomed = function darkenNonBloomed(obj) {
-    if (obj.isMesh) {
-        if (obj.material.length > 1) {
-            materials[obj.uuid] = obj.material;
+    if(obj.isMesh || obj.isLine){
+        if(obj.material.length>1){
+            materials[ obj.uuid ] = obj.material;
             obj.material = materialsPBRDark;
         } else {
             materials[obj.uuid] = obj.material;
