@@ -20,14 +20,17 @@ function initLoading(totalData, progressCallback) {
     data = totalData;
 }
 
+function finishProgress(){
+    loaded = true;
+    loaderElement.style.display = "none";}
+
 function updateProgress(progress) {
 
     let percentProgress = calculateProgress(progress);
     if (progressbarElement) progressbarElement.style.width = percentProgress + "%";
     progressText.innerText = percentProgress + "%";
     if (percentProgress >= 99) {
-        loaded = true;
-        loaderElement.style.display = "none";
+       finishProgress();
     }
 
 }

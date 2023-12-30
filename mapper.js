@@ -50,6 +50,8 @@ async function MapMaterial(src) {
 
 function BuildDefaultMaterial() {
     const mat = new THREE.MeshStandardMaterial();
+    mat.forceSinglePass = true;
+    
     //in case of any specification for default materials, it can be added here
 
     return mat;

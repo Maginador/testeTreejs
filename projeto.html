@@ -9,22 +9,16 @@
 	<!--
 <meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, user-scalable=no" />
 -->
-<script type="importmap">
-	{
-	  "imports": {
-		"three": "/build/three.module.js", 
-		"BufferGeometryUtils":"/jsm/utils/BufferGeometryUtils.js"
-		}
-	}
-  </script>
+
 	<script src="three.min.js"></script>
 	<script src="OrbitControlsTH.min.js"></script>
 	<script src="LineAxisHelper.js"></script>
 	<script src='DAT.GUI.min.js'></script>
 	<script src="projetogeom.js"></script>
-
 	<script src="cameraManager.js"></script>
+	<script src="stats.min.js"></script>
 	<script src="mapper.js"></script>
+
 	<script type="x-shader/x-vertex" id="bloom-vertexshader">
 
 			varying vec2 vUv;
@@ -85,10 +79,19 @@
 	}
 
 </script>
-	
+	<script type="importmap">
+	{
+	  "imports": {
+		"three": "/build/three.module.js",
+		"BufferGeometryUtils":"/jsm/utils/BufferGeometryUtils.js",
+		"Stats": "stats.min.js"
+		}
+	}
+  </script>
 	<script src="/bloomhandler.js" type="module"></script>
 	<script src="/performancehandler.js" type="module"></script>
 	<script src="/ruler.js" type="module"></script>
+	<script src="/performancehandler.js" type="module"></script>
 
 	<script id="main_wgl" type="text/javascript">
 		var materialsPBR = [];
@@ -109,6 +112,8 @@
 			var finalEstimation = 100.0;
 			return finalEstimation + ngeom + mat.length;
 		}
+		let stats = new Stats();
+			
 		async function init() {
 
 			geometryList = [];
@@ -250,9 +255,12 @@
 				//enable ruler when clicking
 				//TODO improve user experience with ui command and proper event 
 			}, true);
+			stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+			document.body.appendChild(stats.dom);
 			var progress = 0;
 			codeclips = "vec3 clipDIST = vec3( 3908.220,452.000,3908.220 ) + vec3(40,40,40);vec3 clipBASE = vec3( -1954.110,-0.000,-1836.626 ) - vec3(20,20,20);"
 			for (var i = 0; i < mat.length; i++) {
+				
 				progress++;
 				updateProgress(progress);
 				const tempMaterial = await MapMaterial(mat[i][3].toLowerCase())
@@ -342,7 +350,7 @@
 			});
 			//materialsPBR.push(linemat);
 
-			//texture_show(true);
+			texture_show(true);
 			// init objects
 			//objects = new THREE.Group();
 			var mrot = new THREE.Matrix4()
@@ -372,6 +380,7 @@
 
 					for (var j = 0; j < geomlist[k].nf; j++) {
 						fst = geomlist[k].f[j].split(",")
+						var dict = {};
 						if (use_texture == true) {
 							var uvst = [];
 							for (var m = 0; m < 3; m++) {
@@ -380,8 +389,9 @@
 						}
 						var mati = geomlist[k].mti[j];
 
-						if (mati == 0) { //mati = dfmatid; }
-							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, dfmatid);
+						if (mati == 0) {
+							dict[dfmatid.toString()] = true;
+							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, 0);
 							geom.faces.push(fc);
 							if (use_texture == true) {
 								geom.faceVertexUvs[0].push([
@@ -394,7 +404,8 @@
 
 							}
 						} else {
-							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, mati);
+							dict[mati.toString()] = true;
+							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, 0);
 							geom.faces.push(fc);
 							if (use_texture == true) {
 								geom.faceVertexUvs[0].push([
@@ -418,6 +429,7 @@
 					mface = new THREE.Mesh(g, materialsPBR);
 					geometryList.push(geom);
 
+
 					mface.castShadow = true;
 					mface.receiveShadow = true;
 					for (var j = 0; j < geomlist[k].nf; j++) {
@@ -426,7 +438,7 @@
 						mface.renderOrder = mati;
 						
 						if (mati === 0) mati = dfmatid;
-						if (materialsPBR[mati].isLight) {
+						if (materialsPBR.length >= mati && materialsPBR[mati] && materialsPBR[mati].isLight) {
 							lighcount++;
 
 							//mface.material = null;
@@ -441,7 +453,7 @@
 							break;
 						}
 
-						if (materialsPBR[mati].bloom) {
+						if (materialsPBR.length >= mati && materialsPBR[mati] && materialsPBR[mati].bloom) {
 							const bloomLayer = new THREE.Layers();
 							bloomLayer.set(BLOOM_SCENE);
 							mface.customProp = BLOOM_SCENE;
@@ -475,9 +487,6 @@
 				await new Promise(r => setTimeout(r, 0));
 
 			}
-//			var mface2 = new THREE.Mesh(bufferGeo, materialsPBR);
-//			scene.add(mface2);
-			//texture_show(true);
 			//geometryList = sortGeometries(geometryList);
 			var g = geometryList[0];
 
@@ -588,20 +597,21 @@
 			parameters.gclipxmin = clipMIN;
 			parameters.gclipymin = clipMIN;
 			parameters.gclipzmin = clipMIN;
-
+			console.log("1");
 			//scene.add( objects );
 			// 画面リサイズ時のイベント
 			window.addEventListener('resize', onWindowResize, false);
 			window.ApplyBloom(scene, renderer);
 
 			var sceneArray = [];
+			console.log("2");
 
 			for (let i = 0; i < scene.children.length; i++) {
 				sceneArray.push(scene.children[i]);
 
-				var progressoffset = 100 * i / scene.children.length;
+				var progressoffset = 100.0 / scene.children.length;
 				updateProgress(progress + progressoffset);
-				if (i % 10 == 0) await new Promise(r => setTimeout(r, 0));
+				if (i % 100 == 0) await new Promise(r => setTimeout(r, 0));
 
 			}
 			window.sceneObjects = sceneArray;
@@ -643,6 +653,21 @@
 			return geometries
 		}
 
+		function checkMaterials(){
+			for(var i = 0; i<materialsPBR.length; i++){
+				for(var o = i+1; o<materialsPBR.length; o++){
+					if(materialsPBR[i] === materialsPBR[o]) console.log("EQUAL");
+				}
+			}
+		}
+
+		async function asyncObjectsAdd(sceneArray) {
+
+			for (let i = 0; i < sceneArray.length; i++) {
+				scene.add(sceneArray[i]);
+				await new Promise(r => setTimeout(r, 0));
+			}
+		}
 		function computeVertexMiddle(geom) {
 			var x = 0, y = 0, z = 0;
 			for (var i = 0; i < geom.vertices.length; i++) {
@@ -707,7 +732,7 @@
 		function render() {
 			renderer.info.autoReset = false;
 			renderer.info.reset(); 
-			requestAnimationFrame(render);
+			stats.begin();
 			if (isLoaded()) {
 				if (controls) controls.update();
 				//renderer.render(scene, camera);
@@ -715,7 +740,10 @@
 				//console.log(renderer.info);
 				//console.log(scene.children);
 				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), scene);
+				console.log(renderer.info.render.calls);
 			}
+			stats.end();
+			requestAnimationFrame(render);
 		}
 	</script
 </head>
