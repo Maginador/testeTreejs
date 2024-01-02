@@ -24,7 +24,7 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
         exposure: 1 // quantidade de claridade
     };
 
-    const renderScene = new RenderPass(scene, camera);
+    const renderScene = new RenderPass(scene, getCurrentCamera());
 
     const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
     bloomPass.threshold = params.threshold;

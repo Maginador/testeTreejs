@@ -16,6 +16,7 @@
 	<script src='DAT.GUI.min.js'></script>
 	<script src="projetogeom.js"></script>
 
+	<script src="cameraManager.js"></script>
 	<script src="mapper.js"></script>
 	<script type="x-shader/x-vertex" id="bloom-vertexshader">
 
@@ -94,10 +95,12 @@
 		var lighthelpers = [];
 		var clipMAX = 100.0;
 		var clipMIN = 0.0;
-		var camera, headlight;
+		var headlight;
 		// 
 		const BLOOM_SCENE = 1;
 		const lightsList = [];
+		const scene_length = 55455;
+
 		let rulerAddPoint = false;
 
 		function calculateTotalData() {
@@ -132,6 +135,7 @@
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			document.getElementById('container').appendChild(renderer.domElement);
 
+
 			// background color
 			renderer.setClearColor(0xffffff, 1.0);
 			//enable shadowmap
@@ -142,10 +146,13 @@
 			// init scene
 			scene = new THREE.Scene();
 
-			// init camera ( fov, aspect, near, far )
-			var scene_length = 55455;
-			camera = new THREE.PerspectiveCamera(50, aspr, 10, scene_length);
-			scene.add(camera);
+			//Initialize Cameras 
+			instantiatePerspectiveCamera(aspr);
+			instantiateOrthographicCamera(window.innerWidth, window.innerHeight);
+
+			setOrthographicTransformation(new THREE.Vector3(0, 500, 0), new THREE.Vector3(-90, 0, 0), true);
+			setCurrentCamera(PERSPECTIVE_CAMERA);
+
 
 			// init 環境光　
 			light1 = new THREE.AmbientLight(0xc3c3bb);
@@ -206,7 +213,7 @@
 			scene.add(sky);
 
 			// init controls : use OrbitControls.js
-			controls = new THREE.OrbitControlsTH(camera, renderer.domElement);
+			controls = new THREE.OrbitControlsTH(getPerspectiveCamera(), renderer.domElement);
 			controls.userZoom = true;        //true:a operação de zoom é possível, falso: a operação de zoom não é possível
 			controls.userZoomSpeed = 1.0;    //Velocidade de zoom
 			controls.userRotate = true;      //true:A operação de rotação é possível, falso: a operação de rotação não é possível
@@ -526,7 +533,7 @@
 							//mface.material = null;
 							if (lighcount < 70) {
 								var vertexMiddle = computeVertexMiddle(geom);
-								var mLight = await BuildLight(materialsPBR[mati].json, vertexMiddle);	
+								var mLight = await BuildLight(materialsPBR[mati].json, vertexMiddle);
 								scene.add(mLight);
 							}
 							//scene.add( spotLightHelper );
@@ -545,8 +552,8 @@
 						}
 
 					}
-					mface.castShadow=true;
-					mface.receiveShadow=true;
+					mface.castShadow = true;
+					mface.receiveShadow = true;
 					scene.add(mface);
 
 					var edgeom = new THREE.Geometry();
@@ -681,7 +688,6 @@
 			//scene.add( objects );
 			// 画面リサイズ時のイベント
 			window.addEventListener('resize', onWindowResize, false);
-			window.ApplyBloom(scene, renderer);
 			var sceneArray = [];
 
 			for (let i = 0; i < scene.children.length; i++) {
@@ -693,6 +699,26 @@
 
 			}
 			window.sceneObjects = sceneArray;
+			/*let cameraEditor = new dat.GUI();
+			const cubeFolder = gui.addFolder('Camera Rotation')
+			var currentCamera = getCurrentCamera();
+			console.log(currentCamera);
+			
+			const cameraFolder = gui.addFolder('Camera Position')
+			cameraFolder.add(currentCamera.position, 'x', -1000, 1000)
+			cameraFolder.add(currentCamera.position, 'y', -1000, 1000)
+			cameraFolder.add(currentCamera.position, 'z', -1000, 1000)
+			cameraFolder.open()
+			cubeFolder.add(currentCamera.rotation, 'x', -(Math.PI * 2), Math.PI * 2)
+			cubeFolder.add(currentCamera.rotation, 'y', -(Math.PI * 2), Math.PI * 2)
+			cubeFolder.add(currentCamera.rotation, 'z', -(Math.PI * 2), Math.PI * 2)
+			cubeFolder.open()
+			const cameraRender = gui.addFolder('Render')
+			cameraRender.add(currentCamera, 'near', 0.0, 300.0)
+			cameraRender.add(currentCamera, 'far', 10.0, 1000000)
+			document.getElementsByClassName("dg ac")[0].style.display = "block";
+*/
+
 
 		}
 
@@ -708,8 +734,8 @@
 		// ウィンドウリサイズ時の動作
 		function onWindowResize() {
 			renderer.setSize(window.innerWidth, window.innerHeight);
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
+			updateCameras(window.innerWidth, window.innerHeight);
+
 			//render();
 		}
 		function texture_show(chk) {
@@ -731,7 +757,10 @@
 		}
 		function render() {
 			requestAnimationFrame(render);
+			window.ApplyBloom(scene, renderer);
+
 			if (isLoaded()) {
+				getCurrentCamera().updateProjectionMatrix();
 				if (controls) controls.update();
 				//renderer.render(scene, camera);
 				if (window.bloomComposer) {
@@ -742,7 +771,7 @@
 					scene.background = new THREE.Color(0xffffff);
 					window.finalComposer.render();
 				}
-				if (rulerAddPoint) RulerRaycast(camera, scene);
+				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), scene);
 			}
 		}
 	</script>
@@ -755,6 +784,9 @@
 	</video>
 	<a class="floatPlus" id="plus">
 		<i class="float">+</i>
+	</a>
+	<a class="floatCamera" id="camera">
+		<i class="float">C</i>
 	</a>
 	<div class="loader">
 
@@ -788,7 +820,7 @@
 	function renderImagem() {
 		var tela = document.querySelector("#container canvas");
 		requestAnimationFrame(render);
-		renderer.render(scene, camera);
+		renderer.render(scene, getCurrentCamera());
 		imagens.push(renderer.domElement.toDataURL());
 	};
 	function retornaImagens() {
@@ -830,6 +862,12 @@
 
 	}
 	document.getElementById("plus").addEventListener("click", EnableRuler);
+	document.getElementById("camera").addEventListener("click", ToggleCamera);
+	
+	function ToggleCamera(){
+		toggleCamera();
+	}
+
 	function EnableRuler() {
 		rulerAddPoint = true;
 		window.boxBase.style.display = "inline"
