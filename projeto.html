@@ -688,6 +688,8 @@
 			//scene.add( objects );
 			// 画面リサイズ時のイベント
 			window.addEventListener('resize', onWindowResize, false);
+			window.ApplyBloom(scene, renderer);
+
 			var sceneArray = [];
 
 			for (let i = 0; i < scene.children.length; i++) {
@@ -757,24 +759,15 @@
 		}
 		function render() {
 			requestAnimationFrame(render);
-			window.ApplyBloom(scene, renderer);
-
 			if (isLoaded()) {
-				getCurrentCamera().updateProjectionMatrix();
 				if (controls) controls.update();
 				//renderer.render(scene, camera);
-				if (window.bloomComposer) {
-					scene.traverse(window.darkenNonBloomed);
-					scene.background = new THREE.Color(0x000000);
-					bloomComposer.render();
-					scene.traverse(window.restoreMaterial);
-					scene.background = new THREE.Color(0xffffff);
-					window.finalComposer.render();
-				}
+				window.doRender();
+	
 				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), scene);
 			}
 		}
-	</script>
+	</script
 </head>
 
 <body onload="main_wgl();" style="overflow: hidden;height: 100%;">

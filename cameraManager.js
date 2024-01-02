@@ -79,6 +79,17 @@ function getPerspectiveCamera() {
     return perspectiveCamera;
 }
 
+function getCurrentCameraID(){
+    return currentCamera;
+}
+
+function getCamera(camera){
+    if(camera === ORTHOGRAPHIC_CAMERA){
+        return orthographicCamera;
+    }else if(camera === PERSPECTIVE_CAMERA){
+        return perspectiveCamera;
+    }
+}
 function getCurrentCamera(){
     if(currentCamera === ORTHOGRAPHIC_CAMERA){
         return orthographicCamera;

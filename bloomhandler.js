@@ -12,10 +12,13 @@ bloomLayer.set(BLOOM_SCENE);
 const darkMaterial = new THREE.MeshBasicMaterial({ color: 'black' });
 const materials = {};
 
-window.ApplyBloom = function ApplyBloom(scene, renderer) {
-    window.bloomComposer = new EffectComposer(renderer);
-    window.finalComposer = new EffectComposer(renderer);
 
+
+window.ApplyBloom = function ApplyBloom(scene, renderer) {
+    window.orthoBloomComposer = new EffectComposer(renderer);
+    window.orthoFinalComposer = new EffectComposer(renderer);
+    window.perspectiveBloomComposer = new EffectComposer(renderer);
+    window.perspFinalComposer = new EffectComposer(renderer);
     //Bloom parameters
     const params = {
         threshold: 0.01, //filtro de branco
@@ -24,37 +27,80 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
         exposure: 1 // quantidade de claridade
     };
 
-    const renderScene = new RenderPass(scene, getCurrentCamera());
+    const orthoRenderScene = new RenderPass(scene, getCamera(ORTHOGRAPHIC_CAMERA));
+    const perspRenderScene = new RenderPass(scene, getCamera(PERSPECTIVE_CAMERA));
 
     const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
     bloomPass.threshold = params.threshold;
     bloomPass.strength = params.strength;
     bloomPass.radius = params.radius;
 
-    window.bloomComposer.renderToScreen = false;
-    window.bloomComposer.addPass(renderScene);
-    window.bloomComposer.addPass(bloomPass);
+    window.perspectiveBloomComposer.renderToScreen = false;
+    window.perspectiveBloomComposer.addPass(perspRenderScene);
+    window.perspectiveBloomComposer.addPass(bloomPass);
 
-    const mixPass = new ShaderPass(
+    const perspMixPass = new ShaderPass(
         new THREE.ShaderMaterial({
             uniforms: {
                 baseTexture: { value: null },
-                bloomTexture: { value: window.bloomComposer.renderTarget2.texture }
+                bloomTexture: { value: window.perspectiveBloomComposer.renderTarget2.texture }
             },
             vertexShader: document.getElementById('bloom-vertexshader').textContent,
             fragmentShader: document.getElementById('bloom-fragmentshader').textContent,
             defines: {}
         }), 'baseTexture'
     );
-    mixPass.needsSwap = true;
+    perspMixPass.needsSwap = true;
+
+    window.orthoBloomComposer.renderToScreen = false;
+    window.orthoBloomComposer.addPass(orthoRenderScene);
+    window.orthoBloomComposer.addPass(bloomPass);
+
+    const orthoMixPass = new ShaderPass(
+        new THREE.ShaderMaterial({
+            uniforms: {
+                baseTexture: { value: null },
+                bloomTexture: { value: window.orthoBloomComposer.renderTarget2.texture }
+            },
+            vertexShader: document.getElementById('bloom-vertexshader').textContent,
+            fragmentShader: document.getElementById('bloom-fragmentshader').textContent,
+            defines: {}
+        }), 'baseTexture'
+    );
+    orthoMixPass.needsSwap = true;
 
     //const outputPass = new OutputPass();
 
-
-    window.finalComposer.addPass(renderScene);
-    window.finalComposer.addPass(mixPass);
+    window.orthoFinalComposer.addPass(orthoRenderScene);
+    window.orthoFinalComposer.addPass(orthoMixPass);
+    window.perspFinalComposer.addPass(perspRenderScene);
+    window.perspFinalComposer.addPass(perspMixPass);
     //window.finalComposer.addPass( outputPass );
 
+}
+
+window.doRender = function doRender() {
+    if (window.orthoBloomComposer && window.perspectiveBloomComposer) {
+
+        if (getCurrentCameraID() === ORTHOGRAPHIC_CAMERA) {
+            scene.traverse(window.darkenNonBloomed);
+            scene.background = new THREE.Color(0x000000);
+            window.orthoBloomComposer.render();
+            scene.traverse(window.restoreMaterial);
+            scene.background = new THREE.Color(0xffffff);
+            window.orthoFinalComposer.render();
+
+        } else {
+
+            scene.traverse(window.darkenNonBloomed);
+            scene.background = new THREE.Color(0x000000);
+            window.perspectiveBloomComposer.render();
+            scene.traverse(window.restoreMaterial);
+            scene.background = new THREE.Color(0xffffff);
+            window.perspFinalComposer.render();
+        }
+
+    }
 }
 window.darkenNonBloomed = function darkenNonBloomed(obj) {
     if (obj.isMesh) {
