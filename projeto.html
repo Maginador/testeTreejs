@@ -9,7 +9,14 @@
 	<!--
 <meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, user-scalable=no" />
 -->
-
+<script type="importmap">
+	{
+	  "imports": {
+		"three": "/build/three.module.js", 
+		"BufferGeometryUtils":"/jsm/utils/BufferGeometryUtils.js"
+		}
+	}
+  </script>
 	<script src="three.min.js"></script>
 	<script src="OrbitControlsTH.min.js"></script>
 	<script src="LineAxisHelper.js"></script>
@@ -78,18 +85,12 @@
 	}
 
 </script>
-	<script type="importmap">
-	{
-	  "imports": {
-		"three": "/build/three.module.js"
-		}
-	}
-  </script>
+	
 	<script src="/bloomhandler.js" type="module"></script>
+	<script src="/performancehandler.js" type="module"></script>
 	<script src="/ruler.js" type="module"></script>
 
 	<script id="main_wgl" type="text/javascript">
-		var materials = [];
 		var materialsPBR = [];
 		var materialsPBRDark = [];
 		var lighthelpers = [];
@@ -101,6 +102,7 @@
 		const lightsList = [];
 		const scene_length = 55455;
 
+		var bufferGeo, geometryList;
 		let rulerAddPoint = false;
 
 		function calculateTotalData() {
@@ -108,6 +110,9 @@
 			return finalEstimation + ngeom + mat.length;
 		}
 		async function init() {
+
+			geometryList = [];
+			bufferGeo = new THREE.BufferGeometry();
 
 			var lighcount = 0;
 			var total = calculateTotalData();
@@ -210,7 +215,6 @@
 			skyGeo.translate(tpos.x, tpos.y, tpos.z);
 			var skyMat = new THREE.ShaderMaterial({ vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide });
 			var sky = new THREE.Mesh(skyGeo, skyMat);
-			scene.add(sky);
 
 			// init controls : use OrbitControls.js
 			controls = new THREE.OrbitControlsTH(getPerspectiveCamera(), renderer.domElement);
@@ -273,117 +277,6 @@
 				}
 				materialsPBR[i].opacity = mat[i][1];
 				//if(materialsPBR[i].light)materialsPBR[i].color = new THREE.Color(0x000000);
-				materials[i] = new THREE.ShaderMaterial({
-					uniforms: THREE.UniformsUtils.merge([
-						THREE.UniformsLib["common"],
-						//THREE.UniformsLib[ "fog" ],
-						THREE.UniformsLib["lights"],
-						THREE.UniformsLib["shadowmap"],
-						{
-							usemap: { type: "i", value: 0 },
-							clipmaxX: { type: 'f', value: clipMAX },
-							clipminX: { type: 'f', value: clipMIN },
-							clipmaxY: { type: 'f', value: clipMAX },
-							clipminY: { type: 'f', value: clipMIN },
-							clipmaxZ: { type: 'f', value: clipMAX },
-							clipminZ: { type: 'f', value: clipMIN },
-							opacity: { type: 'f', value: mat[i][1] },
-							use_clipping: { type: 'i', value: 1 },
-							diffuse: { type: 'c', value: new THREE.Color(mat[i][0]) },
-							emissive: { type: "c", value: new THREE.Color(0x000000) }
-						}]),
-					vertexShader: [
-						THREE.ShaderChunk["common"],
-						"varying vec3 mdpos;", "varying vec3 vLightFront;",
-						"#ifdef DOUBLE_SIDED", "	varying vec3 vLightBack;", "#endif",
-						"varying vec2 vUv;",
-						"uniform vec4 offsetRepeat;",
-						//THREE.ShaderChunk[ "envmap_pars_vertex" ],
-						THREE.ShaderChunk["lights_lambert_pars_vertex"],
-						THREE.ShaderChunk["color_pars_vertex"],
-						//THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
-						//THREE.ShaderChunk[ "skinning_pars_vertex" ],
-						THREE.ShaderChunk["shadowmap_pars_vertex"],
-						//THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
-						"void main() {",
-						"vUv = uv * offsetRepeat.zw + offsetRepeat.xy;",
-						THREE.ShaderChunk["color_vertex"],
-						THREE.ShaderChunk["beginnormal_vertex"],
-						//THREE.ShaderChunk[ "morphnormal_vertex" ],
-						//THREE.ShaderChunk[ "skinbase_vertex" ],
-						//THREE.ShaderChunk[ "skinnormal_vertex" ],
-						THREE.ShaderChunk["defaultnormal_vertex"],
-						THREE.ShaderChunk["begin_vertex"],
-						//THREE.ShaderChunk[ "morphtarget_vertex" ],
-						//THREE.ShaderChunk[ "skinning_vertex" ],
-						THREE.ShaderChunk["project_vertex"],
-						//THREE.ShaderChunk[ "logdepthbuf_vertex" ],
-						THREE.ShaderChunk["worldpos_vertex"],
-						THREE.ShaderChunk["envmap_vertex"],
-						THREE.ShaderChunk["lights_lambert_vertex"],
-						THREE.ShaderChunk["shadowmap_vertex"],
-						"mdpos = vec3(position);}"
-					].join("\n"),
-					fragmentShader: [
-						"uniform float clipmaxX;", "uniform float clipminX;", "uniform float clipmaxY;", "uniform float clipminY;", "uniform float clipmaxZ;", "uniform float clipminZ;", "uniform int use_clipping;",
-						"varying vec3 mdpos;",
-						"uniform vec3 diffuse;", "uniform vec3 emissive;", "uniform float opacity;", "uniform vec3 ambientLightColor;", "varying vec3 vLightFront;", "#ifdef DOUBLE_SIDED", "	varying vec3 vLightBack;", "#endif",
-						"varying vec2 vUv;",
-						"uniform sampler2D map;",
-						"uniform int usemap;",
-						THREE.ShaderChunk["common"],
-						THREE.ShaderChunk["color_pars_fragment"],
-						THREE.ShaderChunk["alphamap_pars_fragment"],
-						//THREE.ShaderChunk[ "envmap_pars_fragment" ],
-						//THREE.ShaderChunk[ "fog_pars_fragment" ],
-						THREE.ShaderChunk["shadowmap_pars_fragment"],
-						//THREE.ShaderChunk[ "specularmap_pars_fragment" ],
-						//THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
-						codeclips,
-						"void main() {",
-						"	vec3 outgoingLight = vec3( 0.0 );",
-						"	vec4 diffuseColor = vec4( diffuse, opacity );",
-						"	vec3 totalAmbientLight = ambientLightColor;",
-						"	vec3 shadowMask = vec3( 1.0 );",
-						THREE.ShaderChunk["logdepthbuf_fragment"],
-						"if( usemap == 1 ){",
-						"vec4 texelColor = texture2D( map, vUv );",
-						"texelColor.xyz = inputToLinear( texelColor.xyz );",
-						"diffuseColor *= texelColor;}",
-						THREE.ShaderChunk["color_fragment"],
-						THREE.ShaderChunk["alphamap_fragment"],
-						THREE.ShaderChunk["alphatest_fragment"],
-						//THREE.ShaderChunk[ "specularmap_fragment" ],
-						THREE.ShaderChunk["shadowmap_fragment"],
-						"	#ifdef DOUBLE_SIDED",
-						"		if ( gl_FrontFacing )",
-						"			outgoingLight += diffuseColor.rgb * ( vLightFront * shadowMask + totalAmbientLight ) + emissive;",
-						"		else",
-						"			outgoingLight += diffuseColor.rgb * ( vLightBack * shadowMask + totalAmbientLight ) + emissive;",
-						"	#else",
-						"		outgoingLight += diffuseColor.rgb * ( vLightFront * shadowMask + totalAmbientLight ) + emissive;",
-						"	#endif",
-						//THREE.ShaderChunk[ "envmap_fragment" ],
-						THREE.ShaderChunk["linear_to_gamma_fragment"],
-						//THREE.ShaderChunk[ "fog_fragment" ],
-						"if( use_clipping == 1 ){",
-						"	vec3 clipmax = clipDIST * vec3( clipmaxX , clipmaxY , clipmaxZ ) * 0.01 + clipBASE;",
-						"	vec3 clipmin = clipDIST * vec3( clipminX , clipminY , clipminZ ) * 0.01 + clipBASE;",
-						"	vec3 linemax = clipDIST * vec3( clipmaxX , clipmaxY , clipmaxZ ) * 0.01 + clipBASE - vec3( 10,10,10 );",
-						"	vec3 linemin = clipDIST * vec3( clipminX , clipminY , clipminZ ) * 0.01 + clipBASE + vec3( 10,10,10 );",
-						"	if( any(lessThan( clipmax,mdpos )) || any(lessThan( mdpos,clipmin )) ){",
-						"		discard;",
-						"	}else if( any(lessThan( linemax,mdpos )) || any(lessThan( mdpos,linemin )) ){",
-						"		gl_FragColor = vec4( outgoingLight, 1.0 ) * vec4(1.0,0.3,0.3,1.0);",
-						"	}else{",
-						"		gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
-						"	}",
-						"}else{",
-						"	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
-						"}",
-						"}"
-					].join("\n")
-				});
 				if (mat[i][2] != "") {
 					var texture = loader.load(tex[i]);
 					texture.magFilter = THREE.NearestFilter;
@@ -391,7 +284,6 @@
 					texture.wrapS = THREE.RepeatWrapping;
 					texture.wrapT = THREE.RepeatWrapping;
 					//texture.repeat.set( mat[i][4] ,mat[i][5]);
-					materials[i].map = texture;
 
 					if (materialsPBR[i].usemapasbump) {
 						materialsPBR[i].bumpMap = texture;
@@ -400,13 +292,10 @@
 
 				}
 				if (mat[i][1] < 1.0) {
-					materials[i].transparent = true;
-					materials[i].blending = THREE.NormalBlending;
+
 					materialsPBR[i].transparent = true;
 					materialsPBR[i].blending = THREE.NormalBlending;
 				}
-				materials[i].side = THREE.DoubleSide;
-				materials[i].lights = true;
 				materialsPBR[i].side = THREE.DoubleSide;
 				materialsPBR[i].lights = true;
 				await new Promise(r => setTimeout(r, 0));
@@ -451,8 +340,7 @@
 				},
 				linewidth: 2
 			});
-			materials.push(linemat);
-			materialsPBR.push(linemat);
+			//materialsPBR.push(linemat);
 
 			//texture_show(true);
 			// init objects
@@ -501,6 +389,9 @@
 									new THREE.Vector2(parseInt(uvst[1][0], 36) / Math.pow(10, prec) * uscale, parseInt(uvst[1][1], 36) / Math.pow(10, prec) * vscale),
 									new THREE.Vector2(parseInt(uvst[2][0], 36) / Math.pow(10, prec) * uscale, parseInt(uvst[2][1], 36) / Math.pow(10, prec) * vscale)]
 								);
+							}else{
+								geom.faceVertexUvs[0].push([new THREE.Vector2(0,0),new THREE.Vector2(0,0),new THREE.Vector2(0,0)]);
+
 							}
 						} else {
 							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, mati);
@@ -511,6 +402,9 @@
 									new THREE.Vector2(parseInt(uvst[1][0], 36) / Math.pow(10, prec), parseInt(uvst[1][1], 36) / Math.pow(10, prec)),
 									new THREE.Vector2(parseInt(uvst[2][0], 36) / Math.pow(10, prec), parseInt(uvst[2][1], 36) / Math.pow(10, prec))]
 								);
+							}else{
+								geom.faceVertexUvs[0].push([new THREE.Vector2(0,0),new THREE.Vector2(0,0),new THREE.Vector2(0,0)]);
+
 							}
 						}
 					}
@@ -520,12 +414,17 @@
 					geom.computeFaceNormals();
 					//geom.translate(mtx[12],-mtx[13],-mtx[14]);
 					//geom.computeVertexNormals();
-					mface = new THREE.Mesh(geom, materialsPBR);
+					var g = new THREE.BufferGeometry().fromGeometry( geom );
+					mface = new THREE.Mesh(g, materialsPBR);
+					geometryList.push(geom);
+
 					mface.castShadow = true;
 					mface.receiveShadow = true;
 					for (var j = 0; j < geomlist[k].nf; j++) {
 
 						var mati = geomlist[k].mti[j];
+						mface.renderOrder = mati;
+						
 						if (mati === 0) mati = dfmatid;
 						if (materialsPBR[mati].isLight) {
 							lighcount++;
@@ -554,7 +453,7 @@
 					}
 					mface.castShadow = true;
 					mface.receiveShadow = true;
-					scene.add(mface);
+					//scene.add(mface);
 
 					var edgeom = new THREE.Geometry();
 					for (var j = 0; j < geomlist[k].ne; j++) {
@@ -576,7 +475,38 @@
 				await new Promise(r => setTimeout(r, 0));
 
 			}
+//			var mface2 = new THREE.Mesh(bufferGeo, materialsPBR);
+//			scene.add(mface2);
 			//texture_show(true);
+			//geometryList = sortGeometries(geometryList);
+			var g = geometryList[0];
+
+			for(let i = 1; i<geometryList.length; i++){
+				//console.log(g);
+				//console.log(geometryList[i]);
+				THREE.GeometryUtils.merge(g,geometryList[i]);
+			}
+			var mface2 = new THREE.Mesh( new THREE.BufferGeometry().fromGeometry(g ), materialsPBR);
+
+			//var simple = window.simplifyScene(mface2,.8);
+			scene.add(mface2);
+			/*for(let i = 0; i<geometryList.length;i++){
+				if(geometryList[i] && !geometryList[i].attributes["uv"]){
+					if(!geometryList[i].attributes["uv"]){
+						geometryList[i].attributes["uv"] = new THREE.Vector2(0,0);
+					}
+					if(!geometryList[i].attributes["color"]){
+						geometryList[i].attributes["color"] = new THREE.Vector2(0,0);
+					}
+					if(!geometryList[i].attributes["uv"]){
+						geometryList[i].attributes["uv"] = new THREE.Vector2(0,0);
+					}
+					resetUVs(geometryList[i]);
+
+				}
+}		*/
+			//var newGeo = window.mergeGeometry(geometryList,false);
+			//scene.add(newGeo);
 			var gui = new dat.GUI();
 			parameters = {
 				scene: "",
@@ -620,52 +550,26 @@
 			var skshadowon = gui.add(parameters, 'useshadow').name('Sombras ON/OFF').listen();
 			skshadowon.onChange(function (value) {
 				renderer.shadowMapEnabled = value;
-				for (var i = 0; i < materials.length; i++) { materials[i].needsUpdate = true; }
 			});
 			var f_clips = gui.addFolder('CLIP PLANE');
 			var skuseclip = f_clips.add(parameters, 'useclip').name('USE CLIPPING').listen();
 			skuseclip.onChange(function (value) {
-				for (var i = 0; i < materials.length; i++) {
-					materials[i].uniforms.use_clipping.value = value;
-				}
 			});
 			var skclipxmax = f_clips.add(parameters, 'gclipxmax', clipMIN, clipMAX).name('CLIP X MAX').listen();
 			skclipxmax.onChange(function (value) {
-				for (var i = 0; i < materials.length; i++) {
-					materials[i].uniforms.clipmaxX.value = value;
-				}
 			});
 			var skclipxmin = f_clips.add(parameters, 'gclipxmin', clipMIN, clipMAX).name('CLIP X MIN').listen();
 			skclipxmin.onChange(function (value) {
-				for (var i = 0; i < materials.length; i++) {
-					materials[i].uniforms.clipminX.value = value;
-				}
+
 			});
 
 			var skclipzmax = f_clips.add(parameters, 'gclipzmax', clipMIN, clipMAX).name('CLIP Y MAX').listen();
 			skclipzmax.onChange(function (value) {
-				for (var i = 0; i < materials.length; i++) {
-					materials[i].uniforms.clipmaxZ.value = value;
-				}
+
 			});
 			var skclipzmin = f_clips.add(parameters, 'gclipzmin', clipMIN, clipMAX).name('CLIP Y MIN').listen();
 			skclipzmin.onChange(function (value) {
-				for (var i = 0; i < materials.length; i++) {
-					materials[i].uniforms.clipminZ.value = value;
-				}
-			});
 
-			var skclipymax = f_clips.add(parameters, 'gclipymax', clipMIN, clipMAX).name('CLIP Z MAX').listen();
-			skclipymax.onChange(function (value) {
-				for (var i = 0; i < materials.length; i++) {
-					materials[i].uniforms.clipmaxY.value = value;
-				}
-			});
-			var skclipymin = f_clips.add(parameters, 'gclipymin', clipMIN, clipMAX).name('CLIP Z MIN').listen();
-			skclipymin.onChange(function (value) {
-				for (var i = 0; i < materials.length; i++) {
-					materials[i].uniforms.clipminY.value = value;
-				}
 			});
 			var f_lights = gui.addFolder('LIGHTS');
 			var sklight1 = f_lights.addColor(parameters, 'ambicolor').name('AMBIENT LIGHT').listen();
@@ -701,7 +605,7 @@
 
 			}
 			window.sceneObjects = sceneArray;
-			/*let cameraEditor = new dat.GUI();
+			let cameraEditor = new dat.GUI();
 			const cubeFolder = gui.addFolder('Camera Rotation')
 			var currentCamera = getCurrentCamera();
 			console.log(currentCamera);
@@ -718,10 +622,25 @@
 			const cameraRender = gui.addFolder('Render')
 			cameraRender.add(currentCamera, 'near', 0.0, 300.0)
 			cameraRender.add(currentCamera, 'far', 10.0, 1000000)
-			document.getElementsByClassName("dg ac")[0].style.display = "block";
-*/
+			//document.getElementsByClassName("dg ac")[0].style.display = "block";
 
 
+			scene.add(sky);
+
+		}
+
+		function sortGeometries(geoList){
+			var geometries = [];
+			var geoObj = [[]];
+			for(var i =0; i<geoList.length;i++){
+				if(geoList[i].faces[0] && !geoObj[geoList[i].faces[0].materialIndex]){
+					geoObj[geoList[i].faces[0].materialIndex] = [];
+				}
+				if(geoList[i].faces[0])geoObj[geoList[i].faces[0].materialIndex].push(geoList[i]);
+				else console.log(geoList[i].faces);
+			}	
+			console.log(geoObj);
+			return geometries
 		}
 
 		function computeVertexMiddle(geom) {
@@ -740,30 +659,61 @@
 
 			//render();
 		}
+
+		function resetUVs( object )
+{
+		console.log(object);
+		var pos = object.attributes[ 'position' ],
+				nor = object.attributes[ 'normal' ],
+				uvs = object.attributes[ 'uv' ];
+	
+		for( var i=0; i<pos.count; i++ )
+		{
+				var x = 0,
+						y = 0;
+			
+				var nx = Math.abs(nor.getX(i)),
+						ny = Math.abs(nor.getY(i)),
+						nz = Math.abs(nor.getZ(i));
+
+				// if facing X
+				if( nx>=ny && nx>=nz )
+				{
+						x = pos.getZ( i );
+						y = pos.getY( i );
+				}
+
+				// if facing Y
+				if( ny>=nx && ny>=nz )
+				{
+						x = pos.getX( i );
+						y = pos.getZ( i );
+				}
+
+				// if facing Z
+				if( nz>=nx && nz>=ny )
+				{
+						x = pos.getX( i );
+						y = pos.getY( i );
+				}
+
+				uvs.setXY( i, x, y );
+		}
+}
+
 		function texture_show(chk) {
 			console.log(mat);
-			for (var i = 0; i < mat.length; i++) {
-				if (mat[i][2] != "") {
-					// texture付material：画像をLoad
-					if (chk) {
-						//materials[i].uniforms.usemap.value = 1;
-						//materials[i].overdraw = true;
-						materials[i].needsUpdate = true;
-					} else {
-						//materials[i].uniforms.usemap.value = 0;
-						//materials[i].overdraw = true;
-						materials[i].needsUpdate = true;
-					}
-				}
-			}
 		}
 		function render() {
+			renderer.info.autoReset = false;
+			renderer.info.reset(); 
 			requestAnimationFrame(render);
 			if (isLoaded()) {
 				if (controls) controls.update();
 				//renderer.render(scene, camera);
 				window.doRender();
-	
+				//console.log(renderer.info);
+				//console.log(scene.children);
 				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), scene);
 			}
 		}

@@ -24,7 +24,6 @@ function anglesToRad(angles){
 }
 function vectorToEuler(vector){
     var euler = new THREE.Euler(anglesToRad(vector.x),anglesToRad(vector.y),anglesToRad(vector.z), "XYZ");
-    console.log(euler);
     return euler;
 }
 
@@ -34,15 +33,12 @@ function setPerspectiveTransformation(position, rotation){
 }
 
 function setOrthographicTransformation(position, rotation, useTransform){
-    console.log(position);
-    console.log(rotation);
     var transformation = {position:position, rotation:rotation};
     orthographicTransforms.push(transformation); 
     if(useTransform)    updateTransform(ORTHOGRAPHIC_CAMERA, orthographicTransforms.length-1);
 }
 
 function updateTransform(camera, index){
-    console.log(index);
     if(camera === PERSPECTIVE_CAMERA){
         console.log(perpectiveTransforms);
         var pos = perpectiveTransforms[index].position;
@@ -51,7 +47,6 @@ function updateTransform(camera, index){
         perspectiveCamera.rotation.set(rot.x,rot.y,rot.z);
 
     }else if(camera === ORTHOGRAPHIC_CAMERA){
-        console.log(orthographicTransforms);
         var pos = orthographicTransforms[index].position;
         orthographicCamera.position.set(pos.x, pos.y, pos.z);
         var rot = vectorToEuler(orthographicTransforms[index].rotation);
