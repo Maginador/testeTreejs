@@ -12,7 +12,7 @@
 	cursor:pointer;
     vertical-align:middle;
 }
-.floatMinus{
+.floatCamera{
 	position:absolute;
 	width:60px;
 	height:60px;
@@ -52,7 +52,7 @@
     border-width: 2px;
     border-style: outset;
     top: -5px;
-    left: 125px;
+    left: 170px;
     position: relative;
     border-radius: 50%;
     width: 25px;
@@ -61,8 +61,8 @@
 }
 .boxRoot{
 	position: absolute;
-    width: 150px;
-    height: 200px;
+    width: 200px;
+    height: 300px;
     top: 120px;
     right: 40px;
     background-color: rgb(201, 201, 201);
@@ -74,6 +74,12 @@
     vertical-align: middle;
 	display: none;
 }
+.name{
+	white-space: nowrap;
+	overflow:scroll;
+	text-overflow: ellipsis;
+	max-width: 100px;
+}
 .listClose{
 	width: 100%;
 }
@@ -84,4 +90,29 @@
 	display: grid;
 	grid-template-columns: 50% 50%;
 	margin: 10px;
+}
+
+.loader{
+	position:absolute;
+	width:50%;
+	height:20px;
+	top:50%;
+	left:25%;
+	background-color:rgb(255, 255, 255);
+	color:#000000;
+	border-radius:6px;
+	text-align:center;
+	box-shadow: 5px 5px 5px #999;
+    vertical-align:middle;
+}
+.progressbar{
+	width: 0%;
+	height: 100%;
+	background-color: rgb(0, 84, 14);
+	color :#000000;
+}
+.progresstext{
+	position:absolute;
+	top: 0px;
+	left: 50%;
 }

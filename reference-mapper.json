@@ -4,13 +4,128 @@
             "pattern": {
                 "prefix": "",
                 "sufix": "",
-                "contains": "branco",
+                "contains": "mdf",
                 "equals": ""
             },
-            "envmap":"gl_image/cenario.jpg",
-            "envmapintensity":"1",
-            "metalness":0.4
-                },
+            "bumpmap": "/gl_image/brushed-metal.jpg",
+            "bumpscale": 0.01,
+            "metalness": 0.1,
+            "roughness": 0.7,
+            "bypassmap": true,
+            "bypasscolor": true,
+            "tintcolor": "#ffff00",
+            "bumpmapRepeatU": 0.3,
+            "bumpmapRepeatV": 0.3
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "adesivo",
+                "equals": ""
+            },
+            "metalness": 0,
+            "roughness": 0.01,
+            "envMapIntensity": 0.75
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "madeira",
+                "equals": ""
+            },
+            "bumpmap": "/gl_image/bumpteste.jpg",
+            "usemapasbump": true,
+            "bypassmap": true,
+            "bypasscolor": true,
+            "tintcolor": "#ffff00",
+            "bumpscale": 1,
+            "metalness": 0,
+            "roughness": 0.3,
+            "envMapIntensity": 0.75
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "1-bagum",
+                "equals": ""
+            },
+            "bumpmap": "/gl_image/leather_bump.jpg",
+            "bumpscale": 0.15,
+            "metalness": 0.1,
+            "roughness": 0.6,
+            "bumpmapRepeatU": 0.5,
+            "bumpmapRepeatV": 0.5
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "tx_cromo",
+                "equals": ""
+            },
+            "bumpmap": "",
+            "bumpscale": 0,
+            "metalness": 1,
+            "roughness": 0.1,
+            "envMapIntensity": 0.75
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "espelho",
+                "equals": ""
+            },
+            "bumpmap": "",
+            "bumpscale": 0,
+            "metalness": 1,
+            "roughness": 0.1,
+            "envMapIntensity": 2
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "piso bus bump",
+                "equals": ""
+            },
+            "bumpmap": "/gl_image/DisplacementMap-bus.jpg",
+            "displacementmap": "/gl_image/DisplacementMap-bus.jpg",
+            "displacementscale": 0.03,
+            "bumpscale": 0.7,
+            "metalness": 0.5,
+            "roughness": 2
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "tx_aluminio",
+                "equals": ""
+            },
+            "bumpmap": "",
+            "bumpscale": 0,
+            "metalness": 0.3,
+            "roughness": 0.5,
+            "envMapIntensity": 0.75
+        },
+        {
+            "pattern": {
+                "prefix": "",
+                "sufix": "",
+                "contains": "tg_vidro",
+                "equals": ""
+            },
+            "transparency": true,
+            "opacity": 0.5,
+            "metalness": 0.1,
+            "roughness": 0.01,
+            "refractiveIndex": 1.5,
+            "envMapIntensity": 4
+        },
         {
             "pattern": {
                 "prefix": "led",
@@ -30,7 +145,13 @@
                 "equals": "0312b453-cd67-41e3-8f2c-13656761b841_5"
             },
             "videotexture": true,
-            "videosource": "video.mp4"
+            "videosource": "video.mp4",
+            "metalness": 0.1,
+            "roughness": 0.1,
+            "envMapIntensity": 1,
+            "emissionintensity": 0.15,
+            "emissioncolor": "#fcfbf8",
+            "bloom": false
         }
     ],
     "lights": [
@@ -43,8 +164,8 @@
             },
             "removemesh": true,
             "type": "spot",
-            "intensity": 0.05,
-            "color": "#ffffff",
+            "intensity": 0.2,
+            "color": "#fcfbf8",
             "range": 1.0,
             "angle": 3,
             "targetoffset": {

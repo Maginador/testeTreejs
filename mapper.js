@@ -5,6 +5,7 @@ async function GetMapperJson() {
     return json;
 }
 const loader = new THREE.TextureLoader();
+let videoTexture;
 
 function ValidatePattern(pattern, src) {
     var result = false;
@@ -35,7 +36,6 @@ async function MapLights(src, position) {
     return light;
 }
 
-
 async function MapMaterial(src) {
 
     let mat = BuildDefaultMaterial();
@@ -50,33 +50,28 @@ async function MapMaterial(src) {
 
 function BuildDefaultMaterial() {
     const mat = new THREE.MeshStandardMaterial();
+    mat.forceSinglePass = true;
+    
     //in case of any specification for default materials, it can be added here
 
     return mat;
 }
 
 async function BuildLight(lightData, position) {
-    let light, helper;
-
+    let light;
     switch (lightData.type) {
         case "point":
         default:
             light = new THREE.PointLight(lightData.color);
-            const sphereSize = 1;
-            helper = new THREE.PointLightHelper(light, sphereSize);
             break;
         case "spot":
             light = new THREE.SpotLight(lightData.color);
-            helper = new THREE.SpotLightHelper(light);
             break;
         case "hemisphere":
             light = new THREE.HemisphereLight(lightData.color);
             break;
 
     }
-    //Comment the line bellow to hide helper
-    scene.add(helper);
-
 
     light.position.set(position.x, position.y, position.z);
     light.angle = Math.PI / lightData.angle;
@@ -86,18 +81,20 @@ async function BuildLight(lightData, position) {
     light.target = targetObject;
     light.intensity = lightData.intensity;
 
-
     return light;
 }
 async function BuildMaterial(material) {
 
     let mat = new THREE.MeshStandardMaterial();
     if (material.videotexture) {
-        let video = document.getElementById('video');
-        video.src = "./" + material.videosource;
-        const texture = new THREE.VideoTexture(video);
-        texture.colorSpace = THREE.SRGBColorSpace;
-        mat.map = texture;
+
+        if (!videoTexture) {
+            let video = document.getElementById('video');
+            video.src = "./" + material.videosource;
+            videoTexture = new THREE.VideoTexture(video);
+            videoTexture.colorSpace = THREE.SRGBColorSpace;
+        }
+        mat.map = videoTexture;
     }
 
     //PBR parameters
@@ -109,9 +106,6 @@ async function BuildMaterial(material) {
     //properties
     mat = ProcessProperties(mat, material);
     if (material.removemesh) mat.opacity = 0;
-
-    mat.needsUpdate = true;
-
     return mat;
 }
 let jsonData;
@@ -119,9 +113,39 @@ let jsonMaterials;
 let jsonLights;
 
 function ProcessProperties(mat, material) {
+    mat.bypassMap = material.bypassmap;
+    mat.bypassColor = material.bypasscolor;
+    mat.color = new THREE.Color(material.tintcolor);
+
     if (material.aomapintensity) mat.aoMapIntensity = parseFloat(material.aomapintensity);
-    if (material.bumpscale) mat.bumpScale = parseFloat(material.bumpscale);
-    if (material.displacementscale) mat.displacementScale = parseFloat(material.displacementscale);
+    if (material.bumpscale) {
+        mat.bumpScale = parseFloat(material.bumpscale);
+
+        if (mat.bumpMap && mat.bumpMap instanceof THREE.Texture) {
+            var x = material.bumpmapRepeatU || 1; // Valor padrão para repetição horizontal da textura
+            var y = material.bumpmapRepeatV || 1; // Valor padrão para repetição vertical da textura            
+
+            mat.bumpMap.wrapS = THREE.RepeatWrapping;
+            mat.bumpMap.wrapT = THREE.RepeatWrapping;
+            mat.bumpMap.repeat.set(x, y);
+
+            mat.bumpMap.minFilter = THREE.LinearFilter;
+            mat.bumpMap.magFilter = THREE.LinearFilter;
+        }
+    }
+    if (material.envMapIntensity !== undefined) {
+        mat.envMapIntensity = parseFloat(material.envMapIntensity);
+    }
+
+    // Carregar e aplicar a textura de deslocamento
+    if (material.displacementmap) {
+        var displacementTexture = new THREE.TextureLoader().load(material.displacementmap);
+        displacementTexture.wrapS = THREE.RepeatWrapping;
+        displacementTexture.wrapT = THREE.RepeatWrapping;
+        mat.displacementMap = displacementTexture;
+        mat.displacementScale = parseFloat(material.displacementscale);
+    }
+
     if (material.emissioncolor) mat.emissive = new THREE.Color(material.emissioncolor);
     if (material.emissionintensity) mat.emissiveIntensity = parseFloat(material.emissionintensity);
     if (material.envmapintensity) mat.envMapIntensity = parseFloat(material.envmapintensity);
@@ -130,83 +154,51 @@ function ProcessProperties(mat, material) {
     if (material.roughness) mat.roughness = parseFloat(material.roughness);
     return mat;
 }
+
 async function ProcessMaps(mat, material) {
+
+    mat.usemapasbump = material.usemapasbump;
 
     if (material.bumpmap) {
         var texture = await loader.load(material.bumpmap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.bumpMap = texture;
     }
     if (material.normalmap) {
         var texture = await loader.load(material.normalmap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.normalMap = texture;
     }
 
     if (material.aomap) {
         var texture = await loader.load(material.aomap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.aoMap = texture;
     }
 
     if (material.alphamap) {
         var texture = await loader.load(material.alphamap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.alphaMap = texture;
     }
     if (material.displacementmap) {
         var texture = await loader.load(material.displacementmap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.displacementMap = texture;
     }
     if (material.emissivemap) {
         var texture = await loader.load(material.emissivemap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.emissiveMap = texture;
     }
     if (material.envmap) {
-
         var texture = await loader.load(material.envmap);
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.envMap = texture;
     }
     if (material.lightmap) {
         var texture = await loader.load(material.lightmap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.lightMap = texture;
     }
     if (material.metalnessmap) {
         var texture = await loader.load(material.metalnessmap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.metalnessMap = texture;
     }
     if (material.roughnessmap) {
         var texture = await loader.load(material.roughnessmap);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1);
         mat.roughnessMap = texture;
     }
     return mat;
