@@ -1,4 +1,22 @@
 {
+    "cameras":{
+        "perspective":{
+            "position":{
+                "x":-730.509, "y":154.654, "z":718.630
+            },
+            "rotation":{
+                "x":0, "y":0, "z":0
+            }
+        },
+        "orthographic":{
+            "position":{
+                "x":0, "y":500, "z":0
+            },
+            "rotation":{
+                "x":-90, "y":0, "z":-45
+            }
+        }
+    },
     "materials": [
         {
             "pattern": {

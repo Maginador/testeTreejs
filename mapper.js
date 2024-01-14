@@ -7,6 +7,14 @@ async function GetMapperJson() {
 const loader = new THREE.TextureLoader();
 let videoTexture;
 
+function getDefaultOrthographicCameraTransform(){
+    return jsonData.cameras.orthographic;
+}
+
+function getDefaultPerspectiveCameraTransform(){
+    return jsonData.cameras.perspective;
+
+}
 function ValidatePattern(pattern, src) {
     var result = false;
     if ((pattern.prefix.toLowerCase() && src.startsWith(pattern.prefix)) ||
