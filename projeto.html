@@ -348,7 +348,7 @@
 				},
 				linewidth: 2
 			});
-			//materialsPBR.push(linemat);
+			materialsPBR.push(linemat);
 
 			texture_show(true);
 			// init objects
@@ -391,21 +391,24 @@
 
 						if (mati == 0) {
 							dict[dfmatid.toString()] = true;
-							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, 0);
+							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, dfmatid);
 							geom.faces.push(fc);
+							console.log(fc);
 							if (use_texture == true) {
-								geom.faceVertexUvs[0].push([
+								var uvs = [
 									new THREE.Vector2(parseInt(uvst[0][0], 36) / Math.pow(10, prec) * uscale, parseInt(uvst[0][1], 36) / Math.pow(10, prec) * vscale),
 									new THREE.Vector2(parseInt(uvst[1][0], 36) / Math.pow(10, prec) * uscale, parseInt(uvst[1][1], 36) / Math.pow(10, prec) * vscale),
-									new THREE.Vector2(parseInt(uvst[2][0], 36) / Math.pow(10, prec) * uscale, parseInt(uvst[2][1], 36) / Math.pow(10, prec) * vscale)]
-								);
+									new THREE.Vector2(parseInt(uvst[2][0], 36) / Math.pow(10, prec) * uscale, parseInt(uvst[2][1], 36) / Math.pow(10, prec) * vscale)];
+								geom.faceVertexUvs[0].push(uvs);
+								console.log(uvs)
 							}else{
+								console.log("teste 1");
 								geom.faceVertexUvs[0].push([new THREE.Vector2(0,0),new THREE.Vector2(0,0),new THREE.Vector2(0,0)]);
 
 							}
 						} else {
 							dict[mati.toString()] = true;
-							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, 0);
+							fc = new THREE.Face3(parseInt(fst[0], 36), parseInt(fst[1], 36), parseInt(fst[2], 36), null, null, mati);
 							geom.faces.push(fc);
 							if (use_texture == true) {
 								geom.faceVertexUvs[0].push([
@@ -414,6 +417,7 @@
 									new THREE.Vector2(parseInt(uvst[2][0], 36) / Math.pow(10, prec), parseInt(uvst[2][1], 36) / Math.pow(10, prec))]
 								);
 							}else{
+								console.log("teste 2");
 								geom.faceVertexUvs[0].push([new THREE.Vector2(0,0),new THREE.Vector2(0,0),new THREE.Vector2(0,0)]);
 
 							}
@@ -465,7 +469,11 @@
 					}
 					mface.castShadow = true;
 					mface.receiveShadow = true;
-					//scene.add(mface);
+					//console.log("before");
+					//console.log(mface.geometry.attributes);
+					//resetUVs(mface.geometry);
+					//console.log(mface.geometry.attributes);
+					scene.add(mface);
 
 					var edgeom = new THREE.Geometry();
 					for (var j = 0; j < geomlist[k].ne; j++) {
@@ -488,17 +496,17 @@
 
 			}
 			//geometryList = sortGeometries(geometryList);
-			var g = geometryList[0];
+			/*var g = geometryList[0];
 
 			for(let i = 1; i<geometryList.length; i++){
 				//console.log(g);
 				//console.log(geometryList[i]);
 				THREE.GeometryUtils.merge(g,geometryList[i]);
-			}
-			var mface2 = new THREE.Mesh( new THREE.BufferGeometry().fromGeometry(g ), materialsPBR);
+			}*/
+			//var mface2 = new THREE.Mesh( new THREE.BufferGeometry().fromGeometry(g ), materialsPBR);
 
 			//var simple = window.simplifyScene(mface2,.8);
-			scene.add(mface2);
+			//scene.add(mface2);
 			/*for(let i = 0; i<geometryList.length;i++){
 				if(geometryList[i] && !geometryList[i].attributes["uv"]){
 					if(!geometryList[i].attributes["uv"]){
@@ -636,7 +644,7 @@
 
 
 			scene.add(sky);
-
+			finishProgress();
 		}
 
 		function sortGeometries(geoList){
@@ -687,11 +695,11 @@
 
 		function resetUVs( object )
 {
-		console.log(object);
 		var pos = object.attributes[ 'position' ],
 				nor = object.attributes[ 'normal' ],
 				uvs = object.attributes[ 'uv' ];
-	
+
+
 		for( var i=0; i<pos.count; i++ )
 		{
 				var x = 0,
