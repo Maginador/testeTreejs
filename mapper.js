@@ -92,9 +92,14 @@ async function BuildMaterial(material) {
             let video = document.getElementById('video');
             video.src = "./" + material.videosource;
             videoTexture = new THREE.VideoTexture(video);
-            videoTexture.colorSpace = THREE.SRGBColorSpace;
         }
         mat.map = videoTexture;
+        mat.map.wrapS = THREE.RepeatWrapping;
+        mat.map.wrapT = THREE.RepeatWrapping;
+        mat.map.repeat.set(1, 1);
+
+        mat.map.minFilter = THREE.LinearFilter;
+        mat.map.magFilter = THREE.LinearFilter;
     }
 
     //PBR parameters
