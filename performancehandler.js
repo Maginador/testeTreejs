@@ -5,6 +5,9 @@ import {BufferGeometryUtils} from '/jsm/utils/BufferGeometryUtils.js';
 const modifier = new SimplifyModifier();
 
 
+window.mergeVertices = function mergeVertices(bufferGeometry){
+    return BufferGeometryUtils.mergeVertices(bufferGeometry,0);
+}
 window.mergeGeometry = function mergeGeometry(geometries,useGroups){
     const result = BufferGeometryUtils.mergeBufferGeometries(geometries,useGroups);
     return result;

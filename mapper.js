@@ -7,6 +7,14 @@ async function GetMapperJson() {
 const loader = new THREE.TextureLoader();
 let videoTexture;
 
+function getDefaultOrthographicCameraTransform(){
+    return jsonData.cameras.orthographic;
+}
+
+function getDefaultPerspectiveCameraTransform(){
+    return jsonData.cameras.perspective;
+
+}
 function ValidatePattern(pattern, src) {
     var result = false;
     if ((pattern.prefix.toLowerCase() && src.startsWith(pattern.prefix)) ||
@@ -92,9 +100,14 @@ async function BuildMaterial(material) {
             let video = document.getElementById('video');
             video.src = "./" + material.videosource;
             videoTexture = new THREE.VideoTexture(video);
-            videoTexture.colorSpace = THREE.SRGBColorSpace;
         }
         mat.map = videoTexture;
+        mat.map.wrapS = THREE.RepeatWrapping;
+        mat.map.wrapT = THREE.RepeatWrapping;
+        mat.map.repeat.set(1, 1);
+
+        mat.map.minFilter = THREE.LinearFilter;
+        mat.map.magFilter = THREE.LinearFilter;
     }
 
     //PBR parameters

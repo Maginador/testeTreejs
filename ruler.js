@@ -17,7 +17,6 @@ const markerWsegments = 12;
 let refSphere;
 
 function PickRulerPoint(objects) {
-
     let dist = 99999;
     let index = -1;
     for (let i = 0; i < objects.length; i++) {
@@ -38,16 +37,37 @@ function PickRulerPoint(objects) {
 }
 
 function pickClosestVertex(object){
-    var vertices = object.object.geometry.vertices;
-    var closest = 99999;
-    var index = -1;
-    for(var i = 0; i<vertices.length; i++){
-        if(closest > object.point.distanceTo(vertices[i])){
-            closest = object.point.distanceTo(vertices[i]);
-            index = i;
+    var vertices;
+    var resultPos;
+    if(object.object.geometry.attributes) {
+        vertices = object.object.geometry.attributes.position;
+        var closest = 99999;
+        var index = -1;
+        for(var i = 0; i<vertices.array.length; i += 3){
+            var pos = new THREE.Vector3(vertices.array[i],vertices.array[i+1],vertices.array[i+2]);
+
+            if(closest > object.point.distanceTo(pos)){
+                closest = object.point.distanceTo(pos);
+                index = i;
+                resultPos = pos;
+            }
         }
     }
-    return vertices[index];
+    else {
+        vertices = object.object.geometry.vertices;
+        var closest = 99999;
+        var index = -1;
+        for(var i = 0; i<vertices.length; i+=3){
+            var pos = vertices[i];
+            if(closest > object.point.distanceTo(pos)){
+                closest = object.point.distanceTo(pos);
+                index = i;
+                resultPos = pos;
+            }
+        }
+    }
+    
+    return resultPos;
 }
 function AddLine(v1, v2) {
 
@@ -88,7 +108,6 @@ function MovePoint(point) {
 }
 function AddPoint(point) {
 
-
     const geometry = new THREE.SphereGeometry(markerSize, markerHsegments, markerWsegments);
     const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
     material.depthTest = false;
@@ -102,11 +121,11 @@ function AddPoint(point) {
 
 }
 
-window.RulerRaycast = function RulerRaycast(camera, scene) {
+window.RulerRaycast = function RulerRaycast(camera, sceneArray) {
 
     raycaster.setFromCamera(pointer, camera);
     // calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(window.sceneObjects);
+    const intersects = raycaster.intersectObjects(sceneArray);
 
     const point = PickRulerPoint(intersects);
     if (!point) {
