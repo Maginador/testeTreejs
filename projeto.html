@@ -106,6 +106,7 @@
 		const scene_length = 55455;
 
 		var bufferGeo, geometryList;
+		var lineslist = [];
 		let rulerAddPoint = false;
 
 		function calculateTotalData() {
@@ -137,6 +138,7 @@
 				renderer = new THREE.WebGLRenderer({ antialias: true });
 			} else {
 				renderer = new THREE.CanvasRenderer();
+				renderer.antialias = true;
 			}
 			var chk_tex_ok = false;
 			// viewport of WebGL
@@ -421,8 +423,9 @@
 					//geom.translate(mtx[12],-mtx[13],-mtx[14]);
 					//geom.computeVertexNormals();
 					var g = new THREE.BufferGeometry().fromGeometry( geom );
+					g = window.mergeVertices(g);
 					mface = new THREE.Mesh(g, materialsPBR);
-					geometryList.push(geom);
+					geometryList.push(g);
 
 
 					mface.castShadow = true;
@@ -481,7 +484,7 @@
 					//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 					var lines = new THREE.LineSegments(edgeom, linemat);
 					lines.visible = mface.visible;
-					scene.add(lines);
+					lineslist.push(lines);
 				}
 				await new Promise(r => setTimeout(r, 0));
 
@@ -500,21 +503,20 @@
 			//scene.add(mface2);
 			/*for(let i = 0; i<geometryList.length;i++){
 				if(geometryList[i] && !geometryList[i].attributes["uv"]){
-					if(!geometryList[i].attributes["uv"]){
-						geometryList[i].attributes["uv"] = new THREE.Vector2(0,0);
+					if(!geometryList[i].attributes["normal"]){
+						geometryList[i].setAttribute("normal",new THREE.Vector3(0,0,0));
 					}
 					if(!geometryList[i].attributes["color"]){
-						geometryList[i].attributes["color"] = new THREE.Vector2(0,0);
+						geometryList[i].setAttribute("color",new THREE.Vector3(0,0,0));
 					}
 					if(!geometryList[i].attributes["uv"]){
-						geometryList[i].attributes["uv"] = new THREE.Vector2(0,0);
+						geometryList[i].setAttribute("uv",new THREE.Vector2(0,0));
 					}
-					resetUVs(geometryList[i]);
-
 				}
-}		*/
-			//var newGeo = window.mergeGeometry(geometryList,false);
-			//scene.add(newGeo);
+			}		
+			console.log(geometryList);
+			var newGeo = window.mergeGeometry(geometryList,false);
+			scene.add(newGeo);*/
 			var gui = new dat.GUI();
 			parameters = {
 				scene: "",
@@ -635,6 +637,8 @@
 
 
 			scene.add(sky);
+			for(var i =0; i<lineslist.length;i++)scene.add(lineslist[i]);
+
 			finishProgress();
 		}
 
@@ -738,7 +742,7 @@
 				window.doRender();
 				//console.log(renderer.info);
 				//console.log(scene.children);
-				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), scene);
+				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), window.sceneObjects);
 				console.log(renderer.info.render.calls);
 			}
 			stats.end();
