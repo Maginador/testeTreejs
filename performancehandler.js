@@ -6,7 +6,8 @@ const modifier = new SimplifyModifier();
 
 
 window.mergeVertices = function mergeVertices(bufferGeometry){
-    return BufferGeometryUtils.mergeVertices(bufferGeometry,0);
+    //return bufferGeometry;
+    return BufferGeometryUtils.mergeVertices(bufferGeometry);
 }
 window.mergeGeometry = function mergeGeometry(geometries,useGroups){
     const result = BufferGeometryUtils.mergeBufferGeometries(geometries,useGroups);
