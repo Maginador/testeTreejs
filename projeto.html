@@ -743,6 +743,8 @@
 				//console.log(renderer.info);
 				//console.log(scene.children);
 				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), window.sceneObjects);
+				if (commentAddPoint) RulerRaycast(getCurrentCamera(), window.sceneObjects);
+
 				console.log(renderer.info.render.calls);
 			}
 			stats.end();
@@ -757,6 +759,9 @@
 	<video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
 	</video>
 	<a class="floatPlus" id="plus">
+		<i class="float">+</i>
+	</a>
+	<a class="floatComment" id="comment">
 		<i class="float">+</i>
 	</a>
 	<a class="floatCamera" id="camera">
@@ -839,11 +844,17 @@
 	}
 	document.getElementById("plus").addEventListener("click", EnableRuler);
 	document.getElementById("camera").addEventListener("click", ToggleCamera);
-	
+	document.getElementById("comment").addEventListener("click", EnableComment);
+
 	function ToggleCamera(){
 		toggleCamera();
 	}
 
+	function EnableComment(){
+		commentAddPoint = true;
+		//TODO create custom window close to the vertex 
+		window.boxBase.style.display = "inline"
+	}
 	function EnableRuler() {
 		rulerAddPoint = true;
 		window.boxBase.style.display = "inline"

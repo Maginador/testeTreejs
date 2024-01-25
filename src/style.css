@@ -12,11 +12,27 @@
 	cursor:pointer;
     vertical-align:middle;
 }
-.floatCamera{
+
+
+.floatComment{
 	position:absolute;
 	width:60px;
 	height:60px;
 	top:120px;
+	left:40px;
+	background-color:rgb(113, 84, 255);
+	color:#FFF;
+	border-radius:50px;
+	text-align:center;
+	box-shadow: 2px 2px 3px #999;
+	cursor:pointer;
+    vertical-align:middle;
+}
+.floatCamera{
+	position:absolute;
+	width:60px;
+	height:60px;
+	top:200px;
 	left:40px;
 	background-color:rgb(113, 84, 255);
 	color:#FFF;

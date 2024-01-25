@@ -272,19 +272,28 @@ function onClick(event) {
     //check if pointer moved less than the threshold
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
         if (refSphere && refSphere.visible && canUseRuler) {
-            AddPoint(refSphere.position);
-            if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
-                const v1 = vertexList[vertexList.length - 1];
-                const v2 = vertexList[vertexList.length - 2];
 
-                const m1 = markers[markers.length - 1];
-                const m2 = markers[markers.length - 2];
-                const line = AddLine(v1, v2);
-                metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
-                UpdateFields();
+            //TODO Divide system in parts : Ruler/Metrics data and Comments data 
+            if(rulerAddPoint){
+                if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
+                    const v1 = vertexList[vertexList.length - 1];
+                    const v2 = vertexList[vertexList.length - 2];
+    
+                    const m1 = markers[markers.length - 1];
+                    const m2 = markers[markers.length - 2];
+                    const line = AddLine(v1, v2);
+                    metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
+                    UpdateFields();
+                    HideSphere();
+                }
+                AddPoint(refSphere.position);
+            }
+            else if (commentAddPoint){
+                //TODO Comments Logic
                 HideSphere();
 
             }
+            
         }
     }
 }
