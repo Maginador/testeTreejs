@@ -51,6 +51,21 @@
     vertical-align:middle;
 
 }
+.commentField{
+	height: auto;
+	overflow: scroll;
+}
+.commentBox, .commentField{
+	width: 80%;
+    margin: 10px;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+    vertical-align: middle;
+    left: 1px;
+    position: relative;
+
+}
 .box{
 	width: 80%;
     margin: 10px;
@@ -74,6 +89,21 @@
     width: 25px;
     height: 25px;
     display: block;
+}
+.boxComment{
+	position: absolute;
+    width: 200px;
+    height: 150px;
+    top: 120px;
+    right: 250px;
+    background-color: rgb(201, 201, 201);
+    color: #000000;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 2px 2px 3px #999;
+    cursor: pointer;
+    vertical-align: middle;
+	display: inline;
 }
 .boxRoot{
 	position: absolute;

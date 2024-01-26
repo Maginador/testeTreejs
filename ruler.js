@@ -351,3 +351,4 @@ boxClose.addEventListener('click', onExitClick);
 boxCloseComment = document.getElementById("boxCloseComments");
 boxCloseComment.addEventListener('click', onExitClick);
 
+window.boxComments.style.display = 'inline';
