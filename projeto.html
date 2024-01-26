@@ -108,6 +108,7 @@
 		var bufferGeo, geometryList;
 		var lineslist = [];
 		let rulerAddPoint = false;
+		let commentAddPoint = false;
 
 		function calculateTotalData() {
 			var finalEstimation = 100.0;
@@ -791,6 +792,15 @@
 		</div>
 	</a>
 
+	<a class="boxRoot" id="boxComments">
+		<div class="box">List of Comments</div>
+		<div class="boxX" id="boxCloseComments">X</div>
+		<div class="listContainer">
+			<div class="list" id="commentsList"></div>
+			<div class="listClose" id="commentsCloseList"></div>
+		</div>
+	</a>
+
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"
 	integrity="sha384-THVO/sM0mFD9h7dfSndI6TS0PgAGavwKvB5hAxRRvc0o9cPLohB0wb/PTA7LdUHs"
@@ -852,8 +862,7 @@
 
 	function EnableComment(){
 		commentAddPoint = true;
-		//TODO create custom window close to the vertex 
-		window.boxBase.style.display = "inline"
+		window.boxComments.style.display = "inline"
 	}
 	function EnableRuler() {
 		rulerAddPoint = true;

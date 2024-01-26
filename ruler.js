@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-let boxClose;
+let boxClose, boxCloseComment;
 let vertexList = [];
 let metricsList = [];
 let measureListElement;
@@ -10,6 +10,7 @@ let closeList = [];
 let nameList = [];
 let markers = [];
 let canUseRuler = true;
+let canUseComment = true;
 const markerSize = 2;
 const markerHsegments = 12;
 const markerWsegments = 12;
@@ -271,10 +272,10 @@ function OnMouseDown(event) {
 function onClick(event) {
     //check if pointer moved less than the threshold
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
-        if (refSphere && refSphere.visible && canUseRuler) {
+        if (refSphere && refSphere.visible) {
 
             //TODO Divide system in parts : Ruler/Metrics data and Comments data 
-            if(rulerAddPoint){
+            if(rulerAddPoint && canUseRuler){
                 if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
                     const v1 = vertexList[vertexList.length - 1];
                     const v2 = vertexList[vertexList.length - 2];
@@ -288,8 +289,10 @@ function onClick(event) {
                 }
                 AddPoint(refSphere.position);
             }
-            else if (commentAddPoint){
+            else if (commentAddPoint && canUseComment){
                 //TODO Comments Logic
+                SaveCommentPosition(refSphere.position);
+                OpenCommentWindow();
                 HideSphere();
 
             }
@@ -298,9 +301,19 @@ function onClick(event) {
     }
 }
 
+function SaveCommentPosition(position){
+    //TODO Save position to hold in the list
+}
+
+function OpenCommentWindow(){
+    //TODO Open window to type the text of the comment
+}
+
 function onExitClick(event) {
     rulerAddPoint = false;
+    commentAddPoint = false;
     window.boxBase.style.display = 'none';
+    window.boxComments.style.display = 'none';
 
 }
 
@@ -310,12 +323,31 @@ function disableRuler(){
 function enableRuler(){
     canUseRuler = true;
 }
+
+function disableComments(){
+    canUseComment = false;
+}
+function enableComments(){
+    canUseComment = true;
+}
 window.addEventListener('pointermove', onPointerMove);
 window.addEventListener('click', onClick);
 window.addEventListener('mousedown', OnMouseDown);
+
+//Ruler Events
 window.boxBase = document.getElementById("boxBase");
 window.boxBase.addEventListener("mouseover", disableRuler);
 window.boxBase.addEventListener("mouseout", enableRuler);
+
+//Comments Events
+window.boxComments = document.getElementById("boxComments");
+window.boxComments.addEventListener("mouseover", disableComments);
+window.boxComments.addEventListener("mouseout", enableComments);
+
+
 boxClose = document.getElementById("boxClose");
 boxClose.addEventListener('click', onExitClick);
+
+boxCloseComment = document.getElementById("boxCloseComments");
+boxCloseComment.addEventListener('click', onExitClick);
 
