@@ -103,7 +103,7 @@
     box-shadow: 2px 2px 3px #999;
     cursor: pointer;
     vertical-align: middle;
-	display: inline;
+	display: none;
 }
 .boxRoot{
 	position: absolute;
@@ -119,6 +119,12 @@
     cursor: pointer;
     vertical-align: middle;
 	display: none;
+}
+.commentName {
+	white-space: nowrap;
+	overflow:hidden;
+	text-overflow: ellipsis;
+	max-width: 80px;
 }
 .name{
 	white-space: nowrap;
