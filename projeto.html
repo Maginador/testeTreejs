@@ -133,13 +133,12 @@
 			});
 
 			const loader = new THREE.TextureLoader();
-
+			
 			// init three
 			if (window.WebGLRenderingContext) {
 				renderer = new THREE.WebGLRenderer({ antialias: true });
 			} else {
 				renderer = new THREE.CanvasRenderer();
-				renderer.antialias = true;
 			}
 			var chk_tex_ok = false;
 			// viewport of WebGL
@@ -171,6 +170,8 @@
 
 			// init 環境光　
 			light1 = new THREE.AmbientLight(0xc3c3bb);
+			//light1.castShadow = true;
+
 			scene.add(light1);
 
 			// init 平行光線：右上手前45degから強度1.0
@@ -181,7 +182,7 @@
 			light2.position.set(sunvec.x + tpos.x, sunvec.y + tpos.y, sunvec.z + tpos.z);
 			light2.target.position.set(tpos);
 
-			light2.castShadow = true;
+			//light2.castShadow = true;
 			light2.shadow.camera.near = scene_length / 2 * 0.85;
 			light2.shadow.camera.far = scene_length / 2 * 1.15;
 			light2.shadow.camera.right = scene_length / 15;
@@ -313,45 +314,11 @@
 				await new Promise(r => setTimeout(r, 0));
 
 			}
-			linemat = new THREE.ShaderMaterial({
-				vertexShader: "varying vec3 mdpos;void main() {mdpos = vec3(position);gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);}",
-				fragmentShader: [
-					"uniform float clipmaxX;", "uniform float clipminX;", "uniform float clipmaxY;", "uniform float clipminY;", "uniform float clipmaxZ;", "uniform float clipminZ;", "uniform int use_clipping;",
-					"uniform vec3 diffuse;",
-					"varying vec3 mdpos;",
-					codeclips,
-					"void main() {",
-					"if( use_clipping == 1 ){",
-					"	vec3 clipmax = clipDIST * vec3( clipmaxX , clipmaxY , clipmaxZ ) * 0.01 + clipBASE;",
-					"	vec3 clipmin = clipDIST * vec3( clipminX , clipminY , clipminZ ) * 0.01 + clipBASE;",
-					"	vec3 linemax = clipDIST * vec3( clipmaxX , clipmaxY , clipmaxZ ) * 0.01 + clipBASE - vec3( 10,10,10 );",
-					"	vec3 linemin = clipDIST * vec3( clipminX , clipminY , clipminZ ) * 0.01 + clipBASE + vec3( 10,10,10 );",
-					"	if( any(lessThan( clipmax,mdpos )) || any(lessThan( mdpos,clipmin )) ){",
-					"		discard;",
-					"	}else if( any(lessThan( linemax,mdpos )) || any(lessThan( mdpos,linemin )) ){",
-					"		gl_FragColor = vec4( diffuse, 1.0 ) * vec4(1.0,0.3,0.3,1.0);",
-					"	}else{",
-					"		gl_FragColor = vec4( diffuse, 1.0 );",
-					"	}",
-					"}else{",
-					"	gl_FragColor = vec4( diffuse, 1.0 );",
-					"}",
-					"}"
-				].join("\n"),
-				uniforms: {
-					clipmaxX: { type: 'f', value: clipMAX },
-					clipminX: { type: 'f', value: clipMIN },
-					clipmaxY: { type: 'f', value: clipMAX },
-					clipminY: { type: 'f', value: clipMIN },
-					clipmaxZ: { type: 'f', value: clipMAX },
-					clipminZ: { type: 'f', value: clipMIN },
-					opacity: { type: 'f', value: 0.1 },
-					use_clipping: { type: 'i', value: 1 },
-					diffuse: { type: 'c', value: new THREE.Color(0X1c1c1c) },
-					emissive: { type: "c", value: new THREE.Color(0x000000) }
-				},
-				linewidth: 2
-			});
+
+			linemat = new THREE.LineBasicMaterial({
+				color:0X1c1c1c,
+				linewidth:10
+			})
 			materialsPBR.push(linemat);
 
 			texture_show(true);
@@ -428,9 +395,6 @@
 					mface = new THREE.Mesh(g, materialsPBR);
 					geometryList.push(g);
 
-
-					mface.castShadow = true;
-					mface.receiveShadow = true;
 					for (var j = 0; j < geomlist[k].nf; j++) {
 
 						var mati = geomlist[k].mti[j];
@@ -462,8 +426,6 @@
 						}
 
 					}
-					mface.castShadow = true;
-					mface.receiveShadow = true;
 					//console.log("before");
 					//console.log(mface.geometry.attributes);
 					//resetUVs(mface.geometry);
@@ -641,8 +603,31 @@
 			for(var i =0; i<lineslist.length;i++)scene.add(lineslist[i]);
 
 			finishProgress();
+			instantiateTestScene();
+			scene.traverse(enableShadows);
 		}
 
+		function instantiateTestScene(){
+
+			const geometry = new THREE.PlaneGeometry( 1, 1 );
+			const material = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			const plane = new THREE.Mesh( geometry, material );
+			plane.castShadow = true;
+			scene.add( plane );
+
+			const geometry2 = new THREE.PlaneGeometry( 1, 1 );
+			const material2 = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			const cube = new THREE.Mesh( geometry, material );
+			cube.castShadow = true;
+			scene.add(cube);
+
+		}
+		function enableShadows(obj){
+			if(obj.isMesh){
+				obj.castShadow = true;
+				obj.receiveShadow = true;			
+			}
+		}
 		function sortGeometries(geoList){
 			var geometries = [];
 			var geoObj = [[]];

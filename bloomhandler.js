@@ -4,6 +4,8 @@ import { EffectComposer } from '/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from '/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from '/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from '/jsm/postprocessing/UnrealBloomPass.js';
+import { FXAAShader } from '/jsm/shaders/FXAAShader.js';
+
 //import { OutputPass } from '/jsm/postprocessing/OutputPass.js';
 const BLOOM_SCENE = 1;
 
@@ -11,10 +13,11 @@ const bloomLayer = new THREE.Layers();
 bloomLayer.set(BLOOM_SCENE);
 const darkMaterial = new THREE.MeshBasicMaterial({ color: 'black' });
 const materials = {};
-
+var container;
 
 
 window.ApplyBloom = function ApplyBloom(scene, renderer) {
+    container = document.getElementById( 'container' );
     window.orthoBloomComposer = new EffectComposer(renderer);
     window.orthoFinalComposer = new EffectComposer(renderer);
     window.perspectiveBloomComposer = new EffectComposer(renderer);
@@ -37,7 +40,7 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
     window.perspectiveBloomComposer.renderToScreen = false;
     window.perspectiveBloomComposer.addPass(perspRenderScene);
-    window.perspectiveBloomComposer.addPass(bloomPass);
+    //window.perspectiveBloomComposer.addPass(bloomPass);
 
     const perspMixPass = new ShaderPass(
         new THREE.ShaderMaterial({
@@ -54,7 +57,7 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
 
     window.orthoBloomComposer.renderToScreen = false;
     window.orthoBloomComposer.addPass(orthoRenderScene);
-    window.orthoBloomComposer.addPass(bloomPass);
+   // window.orthoBloomComposer.addPass(bloomPass);
 
     const orthoMixPass = new ShaderPass(
         new THREE.ShaderMaterial({
@@ -76,6 +79,17 @@ window.ApplyBloom = function ApplyBloom(scene, renderer) {
     window.perspFinalComposer.addPass(perspRenderScene);
     window.perspFinalComposer.addPass(perspMixPass);
     //window.finalComposer.addPass( outputPass );
+
+    const pixelRatio = renderer.getPixelRatio();
+
+    window.fxaaPass = new ShaderPass( FXAAShader );
+    console.log(container);
+    console.log(pixelRatio);
+    window.fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / ( window.innerHeight * pixelRatio );
+	window.fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / ( window.innerWidth * pixelRatio );
+    window.orthoFinalComposer.addPass( fxaaPass );
+    window.perspFinalComposer.addPass( fxaaPass );
+
 
 }
 
