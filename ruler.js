@@ -1,15 +1,30 @@
 import * as THREE from 'three';
 
-let boxClose;
+let boxClose, boxCloseComment;
+let commentWindow, commentText, submitComment, cancelComment, updateComment;
 let vertexList = [];
 let metricsList = [];
 let measureListElement;
 let closeListElement;
+
+let commentsDataList = [];
+let commentsList = [];
+let commentsListElement;
+let commentsCloseListElement;
+let commentCloseList = [];
+let commentNameList = [];
+let commentMarkers = [];
+let editionIndex = -1;
+
+const commentColor = 0x00ffff;
+const commentHightlightColor = 0xffffff
 let measureList = [];
 let closeList = [];
-let nameList = [];
-let markers = [];
+let measureNameList = [];
+let measureMarkers = [];
 let canUseRuler = true;
+let canUseComment = true, commentAlreadyRunning = false;
+let commentPosition;
 const markerSize = 2;
 const markerHsegments = 12;
 const markerWsegments = 12;
@@ -42,13 +57,11 @@ function pickClosestVertex(object){
     if(object.object.geometry.attributes) {
         vertices = object.object.geometry.attributes.position;
         var closest = 99999;
-        var index = -1;
         for(var i = 0; i<vertices.array.length; i += 3){
             var pos = new THREE.Vector3(vertices.array[i],vertices.array[i+1],vertices.array[i+2]);
 
             if(closest > object.point.distanceTo(pos)){
                 closest = object.point.distanceTo(pos);
-                index = i;
                 resultPos = pos;
             }
         }
@@ -56,12 +69,10 @@ function pickClosestVertex(object){
     else {
         vertices = object.object.geometry.vertices;
         var closest = 99999;
-        var index = -1;
         for(var i = 0; i<vertices.length; i+=3){
             var pos = vertices[i];
             if(closest > object.point.distanceTo(pos)){
                 closest = object.point.distanceTo(pos);
-                index = i;
                 resultPos = pos;
             }
         }
@@ -117,7 +128,7 @@ function AddPoint(point) {
 
     scene.add(sphere);
     vertexList.push(sphere.position);
-    markers.push(sphere);
+    measureMarkers.push(sphere);
 
 }
 
@@ -148,7 +159,115 @@ function onPointerMove(event) {
 
 }
 
-function UpdateFields() {
+function UpdateCommentsFields(){
+    if (!commentsListElement) {
+        commentsListElement = document.getElementById("commentsList");
+    }
+    if (!commentsCloseListElement) {
+        commentsCloseListElement = document.getElementById("commentsCloseList");
+    }
+    var diff = commentsDataList.length - commentsList.length;
+    if (diff > 0) {
+        for (let i = 0; i < diff; i++) {
+            var name = document.createElement("div");
+            name.className = "commentName";
+            var trash = document.createElement("div");
+            trash.innerHTML = "X";
+            trash.style.height = "18px";
+            //element.appendChild(trash);
+            commentsListElement.appendChild(name);
+            commentsCloseListElement.appendChild(trash);
+
+            commentsList.push(name);
+            commentCloseList.push(trash);
+            commentNameList.push(name);
+        }
+    }
+    for (let i = 0; i < commentsDataList.length; i++) {
+        commentNameList[i].textContent = commentsDataList[i].comment;
+        // commentsList[i].textContent = commentsList[i].distance.toFixed(2) + 'cm';
+        commentsList[i].index = i;
+        commentsList[i].addEventListener("mouseover", onCommentMouseOver);
+        commentsList[i].addEventListener("mouseout", onCommentMouseOut);
+        commentsList[i].addEventListener("click", onCommentClick);
+        commentCloseList[i].index = i;
+        commentCloseList[i].id = "X" + i;
+        commentCloseList[i].addEventListener("click", onCloseCommentButton)
+    }
+}
+
+function onCommentClick(event){
+
+    console.log("Click");
+    var index = event.currentTarget.index;
+    editionIndex = index;
+    OpenCommentWindow(index);
+
+}
+function onCommentMouseOver(event){
+    console.log("Over");
+
+    var index = event.currentTarget.index;
+
+    HighlightCommentMarkers(index);
+}
+function onCommentMouseOut(event){
+    console.log("Out");
+
+    var index = event.currentTarget.index;
+    ResetHighlightCommentMarkers(index);
+
+}
+
+function HighlightCommentMarkers(index){
+    commentMarkers[index].material.color = new THREE.Color(commentHightlightColor);
+    commentMarkers[index].scale.set(2, 2, 2);
+}
+
+function ResetHighlightCommentMarkers(index){
+    commentMarkers[index].material.color = new THREE.Color(commentColor);
+    commentMarkers[index].scale.set(1, 1, 1);
+}
+function onCloseCommentButton(event){
+    var index = event.currentTarget.index;
+    removeCommentElement(index);
+}
+function removeCommentElement(index){ 
+    commentCloseList[index].remove();
+    commentNameList[index].remove();
+    commentsList[index].remove();
+    DeleteMarker(index);
+    delete commentNameList[index];
+    delete commentCloseList[index];
+    delete commentsDataList[index];
+    delete commentsList[index];
+    var newCloseArray = [];
+    var newMeasureArray = [];
+    var newNamesArray = [];
+    var newMetricsArray = [];
+    for (let i = 0; i < commentCloseList.length; i++) {
+        if (commentCloseList[i]) {
+            newCloseArray.push(commentCloseList[i]);
+        }
+        if (commentsDataList[i]) {
+            newMeasureArray.push(commentsDataList[i]);
+        }
+        if (commentsList[i]) {
+            newMetricsArray.push(commentsList[i]);
+        }
+        if (commentNameList[i]) {
+            newNamesArray.push(commentNameList[i]);
+        }
+    }
+    commentNameList = newNamesArray;
+    commentCloseList = newCloseArray;
+    commentsDataList = newMeasureArray;
+    commentsList = newMetricsArray;
+
+    UpdateCommentsFields();
+}
+
+function UpdateMeasureFields() {
     if (!measureListElement) {
         measureListElement = document.getElementById("measureList");
     }
@@ -172,11 +291,11 @@ function UpdateFields() {
 
             measureList.push(element);
             closeList.push(trash);
-            nameList.push(name);
+            measureNameList.push(name);
         }
     }
     for (let i = 0; i < metricsList.length; i++) {
-        if(!nameList[i].textContent) nameList[i].textContent = "Metric " + i;
+        if(!measureNameList[i].textContent) measureNameList[i].textContent = "Metric " + i;
         measureList[i].textContent = metricsList[i].distance.toFixed(2) + 'cm';
         measureList[i].index = i;
         measureList[i].addEventListener("mouseover", onMeasureMouseOver);
@@ -188,13 +307,13 @@ function UpdateFields() {
 }
 function RemoveElement(index) {
     closeList[index].remove();
-    nameList[index].remove();
+    measureNameList[index].remove();
     measureList[index].remove();
     measureList[index].remove();
     scene.remove(metricsList[index].marker1);
     scene.remove(metricsList[index].marker2);
     scene.remove(metricsList[index].line);
-    delete nameList[index];
+    delete measureNameList[index];
     delete closeList[index];
     delete measureList[index];
     delete metricsList[index];
@@ -212,16 +331,16 @@ function RemoveElement(index) {
         if (metricsList[i]) {
             newMetricsArray.push(metricsList[i]);
         }
-        if (nameList[i]) {
-            newNamesArray.push(nameList[i]);
+        if (measureNameList[i]) {
+            newNamesArray.push(measureNameList[i]);
         }
     }
-    nameList = newNamesArray;
+    measureNameList = newNamesArray;
     closeList = newCloseArray;
     measureList = newMeasureArray;
     metricsList = newMetricsArray;
 
-    UpdateFields();
+    UpdateMeasureFields();
 }
 function ResetHighlight() {
     for (let i = 0; i < metricsList.length; i++) {
@@ -271,27 +390,113 @@ function OnMouseDown(event) {
 function onClick(event) {
     //check if pointer moved less than the threshold
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
-        if (refSphere && refSphere.visible && canUseRuler) {
-            AddPoint(refSphere.position);
-            if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
-                const v1 = vertexList[vertexList.length - 1];
-                const v2 = vertexList[vertexList.length - 2];
+        if (refSphere && refSphere.visible) {
 
-                const m1 = markers[markers.length - 1];
-                const m2 = markers[markers.length - 2];
-                const line = AddLine(v1, v2);
-                metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
-                UpdateFields();
+            console.log(commentAddPoint);
+            console.log(canUseComment);
+            console.log(commentAlreadyRunning);
+            //TODO Divide system in parts : Ruler/Metrics data and Comments data 
+            if(rulerAddPoint && canUseRuler){
+                if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
+                    const v1 = vertexList[vertexList.length - 1];
+                    const v2 = vertexList[vertexList.length - 2];
+    
+                    const m1 = measureMarkers[measureMarkers.length - 1];
+                    const m2 = measureMarkers[measureMarkers.length - 2];
+                    const line = AddLine(v1, v2);
+                    metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
+                    UpdateMeasureFields();
+                    HideSphere();
+                }
+                AddPoint(refSphere.position);
+            }
+            else if (commentAddPoint && canUseComment && !commentAlreadyRunning){
+                //TODO Comments Logic
+                SaveCommentPosition(refSphere.position);
+                InstantiateCommentSphere(refSphere.position);
+                OpenCommentWindow();
                 HideSphere();
 
             }
+            
         }
     }
 }
 
+function SaveCommentPosition(position){
+    commentPosition = position;
+    //TODO Save position to hold in the list
+}
+
+function OpenCommentWindow(index){
+    submitComment.style.display = 'inline';
+    cancelComment.style.display = 'inline';
+    updateComment.style.display = 'none';
+
+    if(index != undefined){
+        console.log(commentsDataList[index].comment);
+        console.log(commentsDataList[index]);
+        commentField.value = commentsDataList[index].comment;
+        submitComment.style.display = 'none';
+        cancelComment.style.display = 'none';
+        updateComment.style.display = 'inline';
+    }   
+
+    commentWindow.style.display = "inline";
+    commentAddPoint = false;
+    commentAlreadyRunning = true;
+}
+
+function HideCommentWindow(){
+    commentWindow.style.display = "none";
+    commentField.value = "";
+    commentAddPoint = true;
+    commentAlreadyRunning = false;
+
+}
+
+function DeleteMarker(index){
+
+    if(index == -1) index = commentMarkers.length-1;
+    scene.remove(commentMarkers[index]);
+}
+
+function SubmitComment(){
+    var obj = {comment:commentField.value, position:commentPosition};
+    commentsDataList.push(obj);
+    UpdateCommentsFields();
+    HideCommentWindow()
+
+}
+
+function CancelComment(){
+    HideCommentWindow();
+    DeleteMarker(-1);
+}
+
+function UpdateComment(){
+    commentsDataList[editionIndex].comment = commentField.value;
+    UpdateCommentsFields();
+    HideCommentWindow()
+}
+
+function InstantiateCommentSphere(obj){
+    const geometry = new THREE.SphereGeometry(markerSize*2, markerHsegments, markerWsegments);
+    const material = new THREE.MeshBasicMaterial({ color: commentColor });
+    material.depthTest = false;
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(obj.x + (markerSize), obj.y + (markerSize), obj.z + (markerSize));
+    sphere.renderOrder = 1;
+
+    commentMarkers.push(sphere);
+    scene.add(sphere);
+    console.log(commentMarkers);
+}
 function onExitClick(event) {
     rulerAddPoint = false;
+    commentAddPoint = false;0
     window.boxBase.style.display = 'none';
+    window.boxComments.style.display = 'none';
 
 }
 
@@ -301,12 +506,43 @@ function disableRuler(){
 function enableRuler(){
     canUseRuler = true;
 }
+
+function disableComments(){
+    canUseComment = false;
+}
+function enableComments(){
+    canUseComment = true;
+}
 window.addEventListener('pointermove', onPointerMove);
 window.addEventListener('click', onClick);
 window.addEventListener('mousedown', OnMouseDown);
+
+//Ruler Events
 window.boxBase = document.getElementById("boxBase");
 window.boxBase.addEventListener("mouseover", disableRuler);
 window.boxBase.addEventListener("mouseout", enableRuler);
+
+//Comments Events
+window.boxComments = document.getElementById("boxComments");
+window.boxComments.addEventListener("mouseover", disableComments);
+window.boxComments.addEventListener("mouseout", enableComments);
+
+
 boxClose = document.getElementById("boxClose");
 boxClose.addEventListener('click', onExitClick);
 
+boxCloseComment = document.getElementById("boxCloseComments");
+boxCloseComment.addEventListener('click', onExitClick);
+commentWindow =  document.getElementById("commentWindow");
+commentText = document.getElementById("commentField");
+submitComment =  document.getElementById("submitComment");
+submitComment.addEventListener('click', SubmitComment);
+
+cancelComment =  document.getElementById("cancelComment");
+cancelComment.addEventListener('click', CancelComment);
+
+
+updateComment = document.getElementById("updateComment");
+updateComment.addEventListener('click', UpdateComment);
+
+//window.boxComments.style.display = 'inline';

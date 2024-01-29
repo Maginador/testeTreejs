@@ -108,6 +108,7 @@
 		var bufferGeo, geometryList;
 		var lineslist = [];
 		let rulerAddPoint = false;
+		let commentAddPoint = false;
 
 		function calculateTotalData() {
 			var finalEstimation = 100.0;
@@ -743,6 +744,8 @@
 				//console.log(renderer.info);
 				//console.log(scene.children);
 				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), window.sceneObjects);
+				if (commentAddPoint) RulerRaycast(getCurrentCamera(), window.sceneObjects);
+
 				console.log(renderer.info.render.calls);
 			}
 			stats.end();
@@ -757,7 +760,14 @@
 	<video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
 	</video>
 	<a class="floatPlus" id="plus">
-		<i class="float">+</i>
+		<i class="float"><img src="ruler_icon.png" alt="Camera Icon" width="32" height="32" style="
+			padding-top: 13px;
+		"></i>
+	</a>
+	<a class="floatComment" id="comment">
+		<i class="float"><img src="comment_icon.png" alt="Camera Icon" width="32" height="32" style="
+			padding-top: 13px;
+		"></i>
 	</a>
 	<a class="floatCamera" id="camera">
 		<i class="float"><img src="camera_icon.png" alt="Camera Icon" width="32" height="32" style="
@@ -784,6 +794,24 @@
 			<div class="list" id="measureList"></div>
 			<div class="listClose" id="closeList"></div>
 		</div>
+	</a>
+
+	<a class="boxRoot" id="boxComments">
+		<div class="box">List of Comments</div>
+		<div class="boxX" id="boxCloseComments">X</div>
+		<div class="listContainer">
+			<div class="list" id="commentsList"></div>
+			<div class="listClose" id="commentsCloseList"></div>
+		</div>
+	</a>
+
+	<a class="boxComment" id="commentWindow">
+		<div class="commentBox">New Comment</div>
+		<textarea class="commentField" type="text" id="commentField" rows="3"> </textarea>
+		<input type="button" id="submitComment" value="Confirm">
+		<input type="button" id="cancelComment" value="Cancel">
+		<input type="button" id="updateComment" value="Update">
+
 	</a>
 
 </body>
@@ -839,11 +867,16 @@
 	}
 	document.getElementById("plus").addEventListener("click", EnableRuler);
 	document.getElementById("camera").addEventListener("click", ToggleCamera);
-	
+	document.getElementById("comment").addEventListener("click", EnableComment);
+
 	function ToggleCamera(){
 		toggleCamera();
 	}
 
+	function EnableComment(){
+		commentAddPoint = true;
+		window.boxComments.style.display = "inline"
+	}
 	function EnableRuler() {
 		rulerAddPoint = true;
 		window.boxBase.style.display = "inline"
