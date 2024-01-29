@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 let boxClose, boxCloseComment;
-let commentWindow, commentText, submitComment, cancelComment;
+let commentWindow, commentText, submitComment, cancelComment, updateComment;
 let vertexList = [];
 let metricsList = [];
 let measureListElement;
@@ -14,6 +14,7 @@ let commentsCloseListElement;
 let commentCloseList = [];
 let commentNameList = [];
 let commentMarkers = [];
+let editionIndex = -1;
 
 const commentColor = 0x00ffff;
 const commentHightlightColor = 0xffffff
@@ -172,7 +173,7 @@ function UpdateCommentsFields(){
             name.className = "commentName";
             var trash = document.createElement("div");
             trash.innerHTML = "X";
-            trash.style.height = "37px";
+            trash.style.height = "18px";
             //element.appendChild(trash);
             commentsListElement.appendChild(name);
             commentsCloseListElement.appendChild(trash);
@@ -183,7 +184,7 @@ function UpdateCommentsFields(){
         }
     }
     for (let i = 0; i < commentsDataList.length; i++) {
-        if(!commentNameList[i].textContent) commentNameList[i].textContent = commentsDataList[i].comment;
+        commentNameList[i].textContent = commentsDataList[i].comment;
         // commentsList[i].textContent = commentsList[i].distance.toFixed(2) + 'cm';
         commentsList[i].index = i;
         commentsList[i].addEventListener("mouseover", onCommentMouseOver);
@@ -199,7 +200,7 @@ function onCommentClick(event){
 
     console.log("Click");
     var index = event.currentTarget.index;
-
+    editionIndex = index;
     OpenCommentWindow(index);
 
 }
@@ -428,10 +429,17 @@ function SaveCommentPosition(position){
 }
 
 function OpenCommentWindow(index){
+    submitComment.style.display = 'inline';
+    cancelComment.style.display = 'inline';
+    updateComment.style.display = 'none';
+
     if(index != undefined){
         console.log(commentsDataList[index].comment);
         console.log(commentsDataList[index]);
         commentField.value = commentsDataList[index].comment;
+        submitComment.style.display = 'none';
+        cancelComment.style.display = 'none';
+        updateComment.style.display = 'inline';
     }   
 
     commentWindow.style.display = "inline";
@@ -456,8 +464,6 @@ function DeleteMarker(index){
 function SubmitComment(){
     var obj = {comment:commentField.value, position:commentPosition};
     commentsDataList.push(obj);
-    console.log(obj);
-    console.log(commentField);
     UpdateCommentsFields();
     HideCommentWindow()
 
@@ -466,6 +472,12 @@ function SubmitComment(){
 function CancelComment(){
     HideCommentWindow();
     DeleteMarker(-1);
+}
+
+function UpdateComment(){
+    commentsDataList[editionIndex].comment = commentField.value;
+    UpdateCommentsFields();
+    HideCommentWindow()
 }
 
 function InstantiateCommentSphere(obj){
@@ -528,5 +540,9 @@ submitComment.addEventListener('click', SubmitComment);
 
 cancelComment =  document.getElementById("cancelComment");
 cancelComment.addEventListener('click', CancelComment);
+
+
+updateComment = document.getElementById("updateComment");
+updateComment.addEventListener('click', UpdateComment);
 
 //window.boxComments.style.display = 'inline';
