@@ -31,6 +31,9 @@ const markerWsegments = 12;
 
 let refSphere;
 
+let offset = 0.04;
+let iterations = 2;
+
 function PickRulerPoint(objects) {
     let dist = 99999;
     let index = -1;
@@ -134,9 +137,46 @@ function AddPoint(point) {
 
 window.RulerRaycast = function RulerRaycast(camera, sceneArray) {
 
-    raycaster.setFromCamera(pointer, camera);
     // calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(sceneArray);
+    let intersects = [];
+    raycaster.setFromCamera(pointer, camera);
+    const threshold = 1;
+    raycaster.params = { 
+        Mesh: {threshold: threshold},
+        Line: { threshold: threshold },
+        LOD: { threshold: threshold },
+        Points: { threshold: threshold },
+        Sprite: { threshold: threshold } 
+    }
+    intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+    for(let i = 1; i<iterations; i++){
+        raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y +offset*i), camera);
+        intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y -offset*i), camera);
+        intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +offset*i, pointer.y +0), camera);
+        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y -offset*i), camera);
+        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        // raycaster.setFromCamera(new THREE.Vector2(pointer.x -offset*i, pointer.y +0), camera);
+        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +offset*i, pointer.y +offset*i), camera);
+        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        // raycaster.setFromCamera(new THREE.Vector2(pointer.x -offset*i, pointer.y -offset*i), camera);
+        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +offset*i, pointer.y -offset*i), camera);
+        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        // raycaster.setFromCamera(new THREE.Vector2(pointer.x -offset*i, pointer.y +offset*i), camera);
+        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+    }
 
     const point = PickRulerPoint(intersects);
     if (!point) {
