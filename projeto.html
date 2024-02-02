@@ -175,14 +175,14 @@
 			scene.add(light1);
 
 			// init 平行光線：右上手前45degから強度1.0
-			light2 = new THREE.DirectionalLight(0xdedede, 0.05);
+			light2 = new THREE.DirectionalLight(0xdedede, 1);
 			tpos = new THREE.Vector3(2.475013527600822e-06, 226.00000000000003, 117.48374390959002);
 			sunvec = new THREE.Vector3(-0.3839559746923643, 0.9225750231472735, 0.03785678489840785);
 			sunvec.setLength(scene_length / 2);
 			light2.position.set(sunvec.x + tpos.x, sunvec.y + tpos.y, sunvec.z + tpos.z);
 			light2.target.position.set(tpos);
 
-			//light2.castShadow = true;
+			light2.castShadow = true;
 			light2.shadow.camera.near = scene_length / 2 * 0.85;
 			light2.shadow.camera.far = scene_length / 2 * 1.15;
 			light2.shadow.camera.right = scene_length / 15;
@@ -190,7 +190,7 @@
 			light2.shadow.camera.top = scene_length / 15;
 			light2.shadow.camera.Bottom = -scene_length / 15;
 			light2.shadow.camera.fov = 1.0;
-			light2.shadow.bias = 0.14;
+			light2.shadow.bias = -0.005;
 			light2.shadow.mapSize.width = 2048;
 			light2.shadow.mapSize.height = 2048;
 
