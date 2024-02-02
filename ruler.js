@@ -140,14 +140,7 @@ window.RulerRaycast = function RulerRaycast(camera, sceneArray) {
     // calculate objects intersecting the picking ray
     let intersects = [];
     raycaster.setFromCamera(pointer, camera);
-    const threshold = 1;
-    raycaster.params = { 
-        Mesh: {threshold: threshold},
-        Line: { threshold: threshold },
-        LOD: { threshold: threshold },
-        Points: { threshold: threshold },
-        Sprite: { threshold: threshold } 
-    }
+    
     intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
 
     for(let i = 1; i<iterations; i++){
@@ -156,26 +149,6 @@ window.RulerRaycast = function RulerRaycast(camera, sceneArray) {
 
         raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y -offset*i), camera);
         intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
-        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +offset*i, pointer.y +0), camera);
-        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
-
-        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y -offset*i), camera);
-        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
-
-        // raycaster.setFromCamera(new THREE.Vector2(pointer.x -offset*i, pointer.y +0), camera);
-        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
-
-        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +offset*i, pointer.y +offset*i), camera);
-        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
-
-        // raycaster.setFromCamera(new THREE.Vector2(pointer.x -offset*i, pointer.y -offset*i), camera);
-        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
-
-        // raycaster.setFromCamera(new THREE.Vector2(pointer.x +offset*i, pointer.y -offset*i), camera);
-        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
-
-        // raycaster.setFromCamera(new THREE.Vector2(pointer.x -offset*i, pointer.y +offset*i), camera);
-        // intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
     }
 
     const point = PickRulerPoint(intersects);
@@ -432,10 +405,7 @@ function onClick(event) {
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
         if (refSphere && refSphere.visible) {
 
-            console.log(commentAddPoint);
-            console.log(canUseComment);
-            console.log(commentAlreadyRunning);
-            //TODO Divide system in parts : Ruler/Metrics data and Comments data 
+            AddPoint(refSphere.position);
             if(rulerAddPoint && canUseRuler){
                 if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
                     const v1 = vertexList[vertexList.length - 1];
@@ -448,7 +418,6 @@ function onClick(event) {
                     UpdateMeasureFields();
                     HideSphere();
                 }
-                AddPoint(refSphere.position);
             }
             else if (commentAddPoint && canUseComment && !commentAlreadyRunning){
                 //TODO Comments Logic
