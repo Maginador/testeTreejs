@@ -154,6 +154,7 @@
 			renderer.autoClear = true;
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFShadowMap;
+			renderer.shadowMap. autoUpdate = false;
 
 			// init scene
 			scene = new THREE.Scene();
@@ -605,6 +606,8 @@
 			finishProgress();
 			instantiateTestScene();
 			scene.traverse(enableShadows);
+			renderer.shadowMap.needsUpdate = true;
+
 		}
 
 		function instantiateTestScene(){
