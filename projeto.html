@@ -18,6 +18,9 @@
 	<script src="cameraManager.js"></script>
 	<script src="stats.min.js"></script>
 	<script src="mapper.js"></script>
+	<script src="editorBase.js"></script>
+	<script src="lightEditor.js"></script>
+	<script src="materialEditor.js"></script>
 
 	<script type="x-shader/x-vertex" id="bloom-vertexshader">
 
@@ -107,6 +110,7 @@
 
 		var bufferGeo, geometryList;
 		var lineslist = [];
+		var lightList = [];
 		let rulerAddPoint = false;
 		let commentAddPoint = false;
 
@@ -410,6 +414,7 @@
 								var vertexMiddle = computeVertexMiddle(geom);
 								var mLight = await BuildLight(materialsPBR[mati].json, vertexMiddle);
 								scene.add(mLight);
+								lightList.push(mLight);
 							}
 							//scene.add( spotLightHelper );
 
@@ -607,7 +612,11 @@
 			instantiateTestScene();
 			scene.traverse(enableShadows);
 			renderer.shadowMap.needsUpdate = true;
+			var lightEditor = new LightEditor();
+			lightEditor.setListOfLights(lightList);
 
+			var materialEditor = new MaterialEditor();
+			materialEditor.setListOfMaterials(materialsPBR);
 		}
 
 		function instantiateTestScene(){
