@@ -1,27 +1,5 @@
-.floatPlus, .floatComment, .floatCamera, .materialEditor, .lightEditor{
-	width:60px;
-	height:60px;
-	margin: 3px;
-	/* top:40px;
-	left:40px; */
-	background-color:rgb(113, 84, 255);
-	color:#FFF;
-	border-radius:5px;
-	text-align:center;
-	box-shadow: 2px 2px 3px #999;
-	cursor:pointer;
-    vertical-align:middle;
-	display: flex;
-}
-.float{
-	width: 50%;
-	margin: auto;
-    font-size: 40px;
-	text-decoration: none;
-	cursor:pointer;
-    vertical-align:middle;
 
-}
+
 .commentField{
 	height: auto;
 	overflow: scroll;
@@ -144,11 +122,33 @@
 	position: absolute;	
     top: 120px;
     left: 40px;
-    background-color: rgb(201, 201, 201);
-    color: #000000;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 2px 2px 3px #999;
-    cursor: pointer;
-    vertical-align: middle;
+    background-color: rgb(43, 36, 68);
+    border-radius: 2px;
+	display: none;
+}
+
+.floatPlus, .floatComment, .floatCamera, .materialEditor, .lightEditor{
+	width:40px;
+	height:40px;
+	margin: 6px 4px;
+	/* top:40px;
+	left:40px; */
+	background-color:#999;
+	color:#FFF;
+	border-radius:2px;
+	text-align:center;
+	cursor:pointer;
+    vertical-align:middle;
+	display: flex;
+}
+.float{
+	margin: auto;
+	cursor:pointer;
+    vertical-align:middle;
+	align-items: center;
+}
+.float img {
+	width: 24px;
+	height: 24px;
+	margin: auto;
 }
