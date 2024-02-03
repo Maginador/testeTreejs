@@ -1,46 +1,17 @@
-.floatPlus{
-	position:absolute;
+.floatPlus, .floatComment, .floatCamera, .materialEditor, .lightEditor{
 	width:60px;
 	height:60px;
-	top:40px;
-	left:40px;
+	margin: 3px;
+	/* top:40px;
+	left:40px; */
 	background-color:rgb(113, 84, 255);
 	color:#FFF;
-	border-radius:50px;
+	border-radius:5px;
 	text-align:center;
 	box-shadow: 2px 2px 3px #999;
 	cursor:pointer;
     vertical-align:middle;
-}
-
-
-.floatComment{
-	position:absolute;
-	width:60px;
-	height:60px;
-	top:120px;
-	left:40px;
-	background-color:rgb(113, 84, 255);
-	color:#FFF;
-	border-radius:50px;
-	text-align:center;
-	box-shadow: 2px 2px 3px #999;
-	cursor:pointer;
-    vertical-align:middle;
-}
-.floatCamera{
-	position:absolute;
-	width:60px;
-	height:60px;
-	top:200px;
-	left:40px;
-	background-color:rgb(113, 84, 255);
-	color:#FFF;
-	border-radius:50px;
-	text-align:center;
-	box-shadow: 2px 2px 3px #999;
-	cursor:pointer;
-    vertical-align:middle;
+	display: flex;
 }
 .float{
 	width: 50%;
@@ -167,4 +138,17 @@
 	position:absolute;
 	top: 0px;
 	left: 50%;
+}
+
+.toolsBar{
+	position: absolute;	
+    top: 120px;
+    left: 40px;
+    background-color: rgb(201, 201, 201);
+    color: #000000;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 2px 2px 3px #999;
+    cursor: pointer;
+    vertical-align: middle;
 }
