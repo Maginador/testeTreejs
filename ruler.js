@@ -401,6 +401,7 @@ function OnMouseDown(event) {
 }
 
 function onClick(event) {
+    if(!canClick) return;
     //check if pointer moved less than the threshold
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
         if (refSphere && refSphere.visible) {
@@ -503,7 +504,7 @@ function InstantiateCommentSphere(obj){
 }
 function onExitClick(event) {
     rulerAddPoint = false;
-    commentAddPoint = false;0
+    commentAddPoint = false;
     window.boxBase.style.display = 'none';
     window.boxComments.style.display = 'none';
     window.commentWindow.style.display = 'none';
@@ -523,6 +524,20 @@ function disableComments(){
 function enableComments(){
     canUseComment = true;
 }
+
+
+window.resetRuler = function resetRuler(){
+    rulerAddPoint = false;
+    window.boxBase.style.display = 'none';
+}
+
+window.resetComments = function resetComments(){
+    commentAddPoint = false;
+    commentAlreadyRunning = false;
+    window.boxComments.style.display = 'none';
+    window.commentWindow.style.display = 'none';
+}
+
 window.addEventListener('pointermove', onPointerMove);
 window.addEventListener('click', onClick);
 window.addEventListener('mousedown', OnMouseDown);

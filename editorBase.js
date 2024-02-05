@@ -30,3 +30,7 @@ boxCloseBaseWindow.addEventListener('click', onExitClick);
 function onExitClick(){
     window.baseWindow.style.display = "none";
 }
+
+window.resetEditor = function resetEditor(){
+    window.baseWindow.style.display = "none";
+}

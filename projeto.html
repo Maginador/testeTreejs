@@ -893,6 +893,10 @@
 	toolbarButtons.push(document.getElementById("camera"))
 	toolbarButtons[toolbarButtons.length-1].addEventListener("click", ToggleCamera);
 	
+	for(var i = 0; i<toolbarButtons.length;i++){
+		toolbarButtons[i].addEventListener("mouseover", lockClick);
+		toolbarButtons[i].addEventListener("mouseout", unlockClick);
+	}
 	function SelectToolbarItem(index){
 		toolbarButtons[index].classList.remove('unselectedButton');
 
@@ -944,14 +948,22 @@
 	}
 
 	function CloseAllWindows(){
-		window.boxBase.style.display = "none"
-		window.boxComments.style.display = "none"
-		window.commentWindow.style.display = 'none';
+		window.resetRuler();
+		window.resetComments();
+		window.resetEditor();
 		window.baseWindow.style.display = "none"
 		for(var i =0; i<toolbarButtons.length; i++){
 			toolbarButtons[i].classList.add('unselectedButton');
 			toolbarButtons[i].classList.remove('selectedButton');		
 		}
+	}
+
+	function lockClick(){
+		canClick = false;
+	}
+
+	function unlockClick(){
+		canClick = true;
 	}
 </script>
 <script src="loader.js"></script>
