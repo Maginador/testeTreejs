@@ -18,9 +18,7 @@
 	<script src="cameraManager.js"></script>
 	<script src="stats.min.js"></script>
 	<script src="mapper.js"></script>
-	<script src="editorBase.js"></script>
-	<script src="lightEditor.js"></script>
-	<script src="materialEditor.js"></script>
+
 
 	<script type="x-shader/x-vertex" id="bloom-vertexshader">
 
@@ -103,6 +101,8 @@
 		var clipMAX = 100.0;
 		var clipMIN = 0.0;
 		var headlight;
+
+		var toolbarButtons = [];
 		// 
 		const BLOOM_SCENE = 1;
 		const lightsList = [];
@@ -759,21 +759,21 @@
 	<video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
 	</video>
 	<div class="toolsBar" id="toolbar"> 
-		<a class="lightEditor" id="light">
-			<i class="float"><img src="light_icon.png" alt="Camera Icon"></i>
+		<a class="toolbarButton unselectedButton" id="light">
+			<i class="float"><img src="light_icon.png" alt="Light Icon"></i>
 		</a>
 
-		<a class="materialEditor" id="material">
-			<i class="float"><img src="material_icon.png" alt="Camera Icon" ></i>
+		<a class="toolbarButton unselectedButton" id="material">
+			<i class="float"><img src="material_icon.png" alt="Material Icon" ></i>
 		</a>
 
-		<a class="floatPlus" id="plus">
-			<i class="float"><img src="ruler_icon.png" alt="Camera Icon"></i>
+		<a class="toolbarButton unselectedButton" id="plus">
+			<i class="float"><img src="ruler_icon.png" alt="Ruler Icon"></i>
 		</a>
-		<a class="floatComment" id="comment">
-			<i class="float"><img src="comment_icon.png" alt="Camera Icon"></i>
+		<a class="toolbarButton unselectedButton" id="comment">
+			<i class="float"><img src="comment_icon.png" alt="Comments Icon"></i>
 		</a>
-		<a class="floatCamera" id="camera">
+		<a class="toolbarButton unselectedButton" id="camera">
 			<i class="float"><img src="camera_icon.png" alt="Camera Icon"></i>
 		</a>
 	</div>
@@ -817,6 +817,19 @@
 		<input type="button" id="updateComment" value="Update">
 
 	</a>
+	<!-- generic window that is used for Inspector and Outliner -->
+	<a class="baseWindow" id="baseWindow">
+		<div class="baseWindowClose" id="boxCloseBaseWindow">X</div>
+
+		<div class="outlinerWindow" id="outliner">
+			<div class="title">Outliner</div>
+		</div>
+		<div class="inspectorWindow" id="inspector">
+			<div class="title">Inspector</div>
+
+		</div>
+	</a>
+
 
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"
@@ -869,23 +882,80 @@
 		doc.output('save', 'meu-melhor-projeto.pdf');
 
 	}
-	document.getElementById("plus").addEventListener("click", EnableRuler);
-	document.getElementById("camera").addEventListener("click", ToggleCamera);
-	document.getElementById("comment").addEventListener("click", EnableComment);
+	toolbarButtons.push(document.getElementById("material"))
+	toolbarButtons[toolbarButtons.length-1].addEventListener("click", EnableMaterialEditor);
+	toolbarButtons.push(document.getElementById("light"))
+	toolbarButtons[toolbarButtons.length-1].addEventListener("click", EnableLightEditor);
+	toolbarButtons.push(document.getElementById("plus"))
+	toolbarButtons[toolbarButtons.length-1].addEventListener("click", EnableRuler);
+	toolbarButtons.push(document.getElementById("comment"))
+	toolbarButtons[toolbarButtons.length-1].addEventListener("click", EnableComment);
+	toolbarButtons.push(document.getElementById("camera"))
+	toolbarButtons[toolbarButtons.length-1].addEventListener("click", ToggleCamera);
+	
+	function SelectToolbarItem(index){
+		toolbarButtons[index].classList.remove('unselectedButton');
 
+		toolbarButtons[index].classList.add('selectedButton');
+	}
 	function ToggleCamera(){
 		toggleCamera();
 	}
 
+	function EnableMaterialEditor(){
+		CloseAllWindows();
+		SelectToolbarItem(0);
+
+		materialEditor = true;
+		lightEditor = false;
+		commentAddPoint = false;
+		rulerAddPoint = false;
+		window.baseWindow.style.display = "inline"
+	}
+
+	function EnableLightEditor(){
+		CloseAllWindows();
+		SelectToolbarItem(1);
+		materialEditor = false;
+		lightEditor = true;
+		commentAddPoint = false;
+		rulerAddPoint = false;
+
+		window.baseWindow.style.display = "inline"
+	}
+
 	function EnableComment(){
+		CloseAllWindows();
+		SelectToolbarItem(3);
+		materialEditor = false;
+		lightEditor = false;
 		commentAddPoint = true;
+		rulerAddPoint = false;		
 		window.boxComments.style.display = "inline"
 	}
 	function EnableRuler() {
+		CloseAllWindows();
+		SelectToolbarItem(2);
+		materialEditor = false;
+		lightEditor = false;
+		commentAddPoint = false;
 		rulerAddPoint = true;
 		window.boxBase.style.display = "inline"
 	}
+
+	function CloseAllWindows(){
+		window.boxBase.style.display = "none"
+		window.boxComments.style.display = "none"
+		window.commentWindow.style.display = 'none';
+		window.baseWindow.style.display = "none"
+		for(var i =0; i<toolbarButtons.length; i++){
+			toolbarButtons[i].classList.add('unselectedButton');
+			toolbarButtons[i].classList.remove('selectedButton');		
+		}
+	}
 </script>
 <script src="loader.js"></script>
-
+<script src="editorBase.js"></script>
+<script src="lightEditor.js"></script>
+<script src="materialEditor.js"></script>
 </html>

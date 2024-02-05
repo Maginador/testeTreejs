@@ -451,13 +451,13 @@ function OpenCommentWindow(index){
         updateComment.style.display = 'inline';
     }   
 
-    commentWindow.style.display = "inline";
+    window.commentWindow.style.display = "inline";
     commentAddPoint = false;
     commentAlreadyRunning = true;
 }
 
 function HideCommentWindow(){
-    commentWindow.style.display = "none";
+    window.commentWindow.style.display = "none";
     commentField.value = "";
     commentAddPoint = true;
     commentAlreadyRunning = false;
@@ -506,6 +506,7 @@ function onExitClick(event) {
     commentAddPoint = false;0
     window.boxBase.style.display = 'none';
     window.boxComments.style.display = 'none';
+    window.commentWindow.style.display = 'none';
 
 }
 
@@ -542,7 +543,7 @@ boxClose.addEventListener('click', onExitClick);
 
 boxCloseComment = document.getElementById("boxCloseComments");
 boxCloseComment.addEventListener('click', onExitClick);
-commentWindow =  document.getElementById("commentWindow");
+window.commentWindow =  document.getElementById("commentWindow");
 commentText = document.getElementById("commentField");
 submitComment =  document.getElementById("submitComment");
 submitComment.addEventListener('click', SubmitComment);

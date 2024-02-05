@@ -127,13 +127,40 @@
 	display: none;
 }
 
-.floatPlus, .floatComment, .floatCamera, .materialEditor, .lightEditor{
+.toolbarButton{
 	width:40px;
 	height:40px;
 	margin: 6px 4px;
 	/* top:40px;
 	left:40px; */
+	border-radius:2px;
+	text-align:center;
+	cursor:pointer;
+    vertical-align:middle;
+	display: flex;
+}
+.unselectedButton{
 	background-color:#999;
+	color:#FFF;
+
+}
+.selectedButton{
+	color:#FFF;
+	background-color:#000000;
+
+}
+.toolbarButton:hover{
+	color:#FFF;
+	background-color:#504f4f;
+
+}
+.toolbarButtonSelected{
+	width:40px;
+	height:40px;
+	margin: 6px 4px;
+	/* top:40px;
+	left:40px; */
+	background-color:#000000;
 	color:#FFF;
 	border-radius:2px;
 	text-align:center;
@@ -151,4 +178,41 @@
 	width: 24px;
 	height: 24px;
 	margin: auto;
+}
+.baseWindow{
+	position: absolute;	
+	top: 10%;
+    right: 40px;
+	display: none;
+}
+.title{
+	background-color: rgb(200, 200, 200);
+
+}
+.outlinerWindow, .inspectorWindow{
+    width: 200px;
+    height: 250px;
+    background-color: rgb(232, 232, 232);
+    color: #000000;
+    border-radius: 2px;
+	border-color: #000000;
+	border-width: 2px;
+	border-style: solid;
+    text-align: center;
+    cursor: pointer;
+	margin-top: 5px;
+	/* padding: 10px; */
+}
+.baseWindowClose{
+    border-color: #000000;
+    background-color: #ffffff;
+    border-width: 2px;
+    border-style: outset;
+    text-align: center;
+    position: relative;
+    width: 17px;
+    height: 17px;
+    display: block;
+    top: 25.5px;
+    left: 183px;
 }

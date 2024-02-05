@@ -21,3 +21,12 @@ class Property{
         this.fields = fields;
     }
 }
+
+window.baseWindow = document.getElementById("baseWindow");
+window.boxCloseBaseWindow = document.getElementById("boxCloseBaseWindow");
+
+boxCloseBaseWindow.addEventListener('click', onExitClick);
+
+function onExitClick(){
+    window.baseWindow.style.display = "none";
+}
