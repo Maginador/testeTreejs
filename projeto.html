@@ -448,6 +448,7 @@
 					//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 					var lines = new THREE.LineSegments(edgeom, linemat);
 					lines.visible = mface.visible;
+					//Comment this line to disable lines
 					lineslist.push(lines);
 				}
 				await new Promise(r => setTimeout(r, 0));
