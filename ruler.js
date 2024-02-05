@@ -31,6 +31,9 @@ const markerWsegments = 12;
 
 let refSphere;
 
+let offset = 0.04;
+let iterations = 2;
+
 function PickRulerPoint(objects) {
     let dist = 99999;
     let index = -1;
@@ -134,9 +137,19 @@ function AddPoint(point) {
 
 window.RulerRaycast = function RulerRaycast(camera, sceneArray) {
 
-    raycaster.setFromCamera(pointer, camera);
     // calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(sceneArray);
+    let intersects = [];
+    raycaster.setFromCamera(pointer, camera);
+    
+    intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+    for(let i = 1; i<iterations; i++){
+        raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y +offset*i), camera);
+        intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+        raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y -offset*i), camera);
+        intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+    }
 
     const point = PickRulerPoint(intersects);
     if (!point) {
@@ -392,10 +405,7 @@ function onClick(event) {
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
         if (refSphere && refSphere.visible) {
 
-            console.log(commentAddPoint);
-            console.log(canUseComment);
-            console.log(commentAlreadyRunning);
-            //TODO Divide system in parts : Ruler/Metrics data and Comments data 
+            AddPoint(refSphere.position);
             if(rulerAddPoint && canUseRuler){
                 if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
                     const v1 = vertexList[vertexList.length - 1];
@@ -408,7 +418,6 @@ function onClick(event) {
                     UpdateMeasureFields();
                     HideSphere();
                 }
-                AddPoint(refSphere.position);
             }
             else if (commentAddPoint && canUseComment && !commentAlreadyRunning){
                 //TODO Comments Logic

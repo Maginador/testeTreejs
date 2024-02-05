@@ -133,13 +133,12 @@
 			});
 
 			const loader = new THREE.TextureLoader();
-
+			
 			// init three
 			if (window.WebGLRenderingContext) {
 				renderer = new THREE.WebGLRenderer({ antialias: true });
 			} else {
 				renderer = new THREE.CanvasRenderer();
-				renderer.antialias = true;
 			}
 			var chk_tex_ok = false;
 			// viewport of WebGL
@@ -155,6 +154,7 @@
 			renderer.autoClear = true;
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFShadowMap;
+			renderer.shadowMap. autoUpdate = false;
 
 			// init scene
 			scene = new THREE.Scene();
@@ -169,12 +169,14 @@
 			setCurrentCamera(PERSPECTIVE_CAMERA);
 
 
-			// init 環境光　
+			// init 環境光　l
 			light1 = new THREE.AmbientLight(0xc3c3bb);
+			//light1.castShadow = true;
+
 			scene.add(light1);
 
 			// init 平行光線：右上手前45degから強度1.0
-			light2 = new THREE.DirectionalLight(0xdedede, 0.05);
+			light2 = new THREE.DirectionalLight(0xdedede, 1);
 			tpos = new THREE.Vector3(2.475013527600822e-06, 226.00000000000003, 117.48374390959002);
 			sunvec = new THREE.Vector3(-0.3839559746923643, 0.9225750231472735, 0.03785678489840785);
 			sunvec.setLength(scene_length / 2);
@@ -189,7 +191,7 @@
 			light2.shadow.camera.top = scene_length / 15;
 			light2.shadow.camera.Bottom = -scene_length / 15;
 			light2.shadow.camera.fov = 1.0;
-			light2.shadow.bias = 0.14;
+			light2.shadow.bias = -0.005;
 			light2.shadow.mapSize.width = 2048;
 			light2.shadow.mapSize.height = 2048;
 
@@ -313,45 +315,11 @@
 				await new Promise(r => setTimeout(r, 0));
 
 			}
-			linemat = new THREE.ShaderMaterial({
-				vertexShader: "varying vec3 mdpos;void main() {mdpos = vec3(position);gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);}",
-				fragmentShader: [
-					"uniform float clipmaxX;", "uniform float clipminX;", "uniform float clipmaxY;", "uniform float clipminY;", "uniform float clipmaxZ;", "uniform float clipminZ;", "uniform int use_clipping;",
-					"uniform vec3 diffuse;",
-					"varying vec3 mdpos;",
-					codeclips,
-					"void main() {",
-					"if( use_clipping == 1 ){",
-					"	vec3 clipmax = clipDIST * vec3( clipmaxX , clipmaxY , clipmaxZ ) * 0.01 + clipBASE;",
-					"	vec3 clipmin = clipDIST * vec3( clipminX , clipminY , clipminZ ) * 0.01 + clipBASE;",
-					"	vec3 linemax = clipDIST * vec3( clipmaxX , clipmaxY , clipmaxZ ) * 0.01 + clipBASE - vec3( 10,10,10 );",
-					"	vec3 linemin = clipDIST * vec3( clipminX , clipminY , clipminZ ) * 0.01 + clipBASE + vec3( 10,10,10 );",
-					"	if( any(lessThan( clipmax,mdpos )) || any(lessThan( mdpos,clipmin )) ){",
-					"		discard;",
-					"	}else if( any(lessThan( linemax,mdpos )) || any(lessThan( mdpos,linemin )) ){",
-					"		gl_FragColor = vec4( diffuse, 1.0 ) * vec4(1.0,0.3,0.3,1.0);",
-					"	}else{",
-					"		gl_FragColor = vec4( diffuse, 1.0 );",
-					"	}",
-					"}else{",
-					"	gl_FragColor = vec4( diffuse, 1.0 );",
-					"}",
-					"}"
-				].join("\n"),
-				uniforms: {
-					clipmaxX: { type: 'f', value: clipMAX },
-					clipminX: { type: 'f', value: clipMIN },
-					clipmaxY: { type: 'f', value: clipMAX },
-					clipminY: { type: 'f', value: clipMIN },
-					clipmaxZ: { type: 'f', value: clipMAX },
-					clipminZ: { type: 'f', value: clipMIN },
-					opacity: { type: 'f', value: 0.1 },
-					use_clipping: { type: 'i', value: 1 },
-					diffuse: { type: 'c', value: new THREE.Color(0X1c1c1c) },
-					emissive: { type: "c", value: new THREE.Color(0x000000) }
-				},
-				linewidth: 2
-			});
+
+			linemat = new THREE.LineBasicMaterial({
+				color:0X1c1c1c,
+				linewidth:10
+			})
 			materialsPBR.push(linemat);
 
 			texture_show(true);
@@ -428,9 +396,6 @@
 					mface = new THREE.Mesh(g, materialsPBR);
 					geometryList.push(g);
 
-
-					mface.castShadow = true;
-					mface.receiveShadow = true;
 					for (var j = 0; j < geomlist[k].nf; j++) {
 
 						var mati = geomlist[k].mti[j];
@@ -462,8 +427,6 @@
 						}
 
 					}
-					mface.castShadow = true;
-					mface.receiveShadow = true;
 					//console.log("before");
 					//console.log(mface.geometry.attributes);
 					//resetUVs(mface.geometry);
@@ -485,6 +448,7 @@
 					//edgeom.translate(mtx[12],-mtx[13],-mtx[14]);
 					var lines = new THREE.LineSegments(edgeom, linemat);
 					lines.visible = mface.visible;
+					//Comment this line to disable lines
 					lineslist.push(lines);
 				}
 				await new Promise(r => setTimeout(r, 0));
@@ -641,8 +605,33 @@
 			for(var i =0; i<lineslist.length;i++)scene.add(lineslist[i]);
 
 			finishProgress();
+			instantiateTestScene();
+			scene.traverse(enableShadows);
+			renderer.shadowMap.needsUpdate = true;
+
 		}
 
+		function instantiateTestScene(){
+
+			const geometry = new THREE.PlaneGeometry( 1, 1 );
+			const material = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			const plane = new THREE.Mesh( geometry, material );
+			plane.castShadow = true;
+			scene.add( plane );
+
+			const geometry2 = new THREE.PlaneGeometry( 1, 1 );
+			const material2 = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			const cube = new THREE.Mesh( geometry, material );
+			cube.castShadow = true;
+			scene.add(cube);
+
+		}
+		function enableShadows(obj){
+			if(obj.isMesh){
+				obj.castShadow = true;
+				obj.receiveShadow = true;			
+			}
+		}
 		function sortGeometries(geoList){
 			var geometries = [];
 			var geoObj = [[]];
