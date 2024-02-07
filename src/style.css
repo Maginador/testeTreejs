@@ -54,7 +54,7 @@
     vertical-align: middle;
 	display: none;
 }
-.boxRoot{
+/* .boxRoot{
 	position: absolute;
     width: 200px;
     height: 300px;
@@ -68,7 +68,7 @@
     cursor: pointer;
     vertical-align: middle;
 	display: none;
-}
+} */
 .commentName {
 	white-space: nowrap;
 	overflow:hidden;
@@ -179,7 +179,7 @@
 	height: 24px;
 	margin: auto;
 }
-.baseWindow{
+.baseWindow, .boxRoot{
 	position: absolute;	
 	top: 10%;
     right: 40px;
@@ -189,7 +189,7 @@
 	background-color: rgb(200, 200, 200);
 
 }
-.outlinerWindow, .inspectorWindow{
+.outlinerWindow, .inspectorWindow, .rulerWindow, .commentsWindow{
     width: 200px;
     height: 250px;
     background-color: rgb(232, 232, 232);
@@ -215,4 +215,6 @@
     display: block;
     top: 25.5px;
     left: 183px;
+	cursor: pointer;
+
 }

@@ -553,7 +553,7 @@ window.boxComments.addEventListener("mouseover", disableComments);
 window.boxComments.addEventListener("mouseout", enableComments);
 
 
-boxClose = document.getElementById("boxClose");
+boxClose = document.getElementById("boxCloseRuler");
 boxClose.addEventListener('click', onExitClick);
 
 boxCloseComment = document.getElementById("boxCloseComments");
