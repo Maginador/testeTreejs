@@ -815,7 +815,7 @@
 	</a>
 
 	<a class="boxComment" id="commentWindow">
-		<div class="commentBox">New Comment</div>
+		<div class="title">New Comment</div>
 		<textarea class="commentField" type="text" id="commentField" rows="3"> </textarea>
 		<input type="button" id="submitComment" value="Confirm">
 		<input type="button" id="cancelComment" value="Cancel">
@@ -964,11 +964,11 @@
 	}
 
 	function lockClick(){
-		canClick = false;
+		window.canClick = false;
 	}
 
 	function unlockClick(){
-		canClick = true;
+		window.canClick = true;
 	}
 </script>
 <script src="loader.js"></script>

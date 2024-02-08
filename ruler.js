@@ -33,7 +33,7 @@ let refSphere;
 
 let offset = 0.04;
 let iterations = 2;
-
+window.canClick = false;
 function PickRulerPoint(objects) {
     let dist = 99999;
     let index = -1;
@@ -197,8 +197,8 @@ function UpdateCommentsFields(){
         }
     }
     for (let i = 0; i < commentsDataList.length; i++) {
+        if(commentsDataList[i].comment == "") commentsDataList[i].comment = "<Comentário Vazio>";
         commentNameList[i].textContent = commentsDataList[i].comment;
-        // commentsList[i].textContent = commentsList[i].distance.toFixed(2) + 'cm';
         commentsList[i].index = i;
         commentsList[i].addEventListener("mouseover", onCommentMouseOver);
         commentsList[i].addEventListener("mouseout", onCommentMouseOut);
@@ -233,6 +233,8 @@ function onCommentMouseOut(event){
 }
 
 function HighlightCommentMarkers(index){
+    console.log(commentMarkers[index]);
+    console.log(commentMarkers);
     commentMarkers[index].material.color = new THREE.Color(commentHightlightColor);
     commentMarkers[index].scale.set(2, 2, 2);
 }
@@ -401,7 +403,7 @@ function OnMouseDown(event) {
 }
 
 function onClick(event) {
-    if(!canClick) return;
+    if(!window.canClick) return;
     //check if pointer moved less than the threshold
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
         if (refSphere && refSphere.visible) {

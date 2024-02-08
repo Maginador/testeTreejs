@@ -1,6 +1,6 @@
 
 
-.commentField{
+/* .commentField{
 	height: auto;
 	overflow: scroll;
 }
@@ -14,7 +14,7 @@
     left: 1px;
     position: relative;
 
-}
+} */
 .box{
 	width: 80%;
     margin: 10px;
@@ -43,8 +43,8 @@
 	position: absolute;
     width: 200px;
     height: 150px;
-    top: 120px;
-    right: 250px;
+    top: 93px;
+    right: 246px;
     background-color: rgb(201, 201, 201);
     color: #000000;
     border-radius: 10px;
@@ -189,7 +189,7 @@
 	background-color: rgb(200, 200, 200);
 
 }
-.outlinerWindow, .inspectorWindow, .rulerWindow, .commentsWindow{
+.outlinerWindow, .inspectorWindow, .rulerWindow, .commentsWindow, .boxComment{
     width: 200px;
     height: 250px;
     background-color: rgb(232, 232, 232);
@@ -202,6 +202,9 @@
     cursor: pointer;
 	margin-top: 5px;
 	/* padding: 10px; */
+}
+.commentField{
+	margin: 10px 0px 10px 0px;
 }
 .baseWindowClose{
     border-color: #000000;
