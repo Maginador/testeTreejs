@@ -34,6 +34,10 @@ let refSphere;
 let offset = 0.04;
 let iterations = 2;
 window.canClick = false;
+
+let rulerStage = 0;
+let parallelLines;
+
 function PickRulerPoint(objects) {
     let dist = 99999;
     let index = -1;
@@ -54,16 +58,16 @@ function PickRulerPoint(objects) {
 
 }
 
-function pickClosestVertex(object){
+function pickClosestVertex(object) {
     var vertices;
     var resultPos;
-    if(object.object.geometry.attributes) {
+    if (object.object.geometry.attributes) {
         vertices = object.object.geometry.attributes.position;
         var closest = 99999;
-        for(var i = 0; i<vertices.array.length; i += 3){
-            var pos = new THREE.Vector3(vertices.array[i],vertices.array[i+1],vertices.array[i+2]);
+        for (var i = 0; i < vertices.array.length; i += 3) {
+            var pos = new THREE.Vector3(vertices.array[i], vertices.array[i + 1], vertices.array[i + 2]);
 
-            if(closest > object.point.distanceTo(pos)){
+            if (closest > object.point.distanceTo(pos)) {
                 closest = object.point.distanceTo(pos);
                 resultPos = pos;
             }
@@ -72,15 +76,15 @@ function pickClosestVertex(object){
     else {
         vertices = object.object.geometry.vertices;
         var closest = 99999;
-        for(var i = 0; i<vertices.length; i+=3){
+        for (var i = 0; i < vertices.length; i += 3) {
             var pos = vertices[i];
-            if(closest > object.point.distanceTo(pos)){
+            if (closest > object.point.distanceTo(pos)) {
                 closest = object.point.distanceTo(pos);
                 resultPos = pos;
             }
         }
     }
-    
+
     return resultPos;
 }
 function AddLine(v1, v2) {
@@ -100,6 +104,38 @@ function AddLine(v1, v2) {
 function HideSphere() {
     if (refSphere) refSphere.visible = false;
 
+}
+var distance = 10;
+function MoveParallelLines() {
+
+    if (metricsList.length > 0 && !metricsList[metricsList.length - 1].parallelLines) {
+
+        // Vetor direção da linha
+        let lineDirection = new THREE.Vector3().subVectors(metricsList[metricsList.length - 1].point2, metricsList[metricsList.length - 1].point1).normalize();
+
+        // Vetor arbitrário não colinear
+        let arbitraryVector = new THREE.Vector3(1, 0, 0);
+
+        // Vetor perpendicular à linha
+        let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
+        const material = new THREE.LineBasicMaterial({ color: 0xff00 });
+        const points = [];
+        points.push(metricsList[metricsList.length - 1].point1);
+        points.push(new THREE.Vector3(metricsList[metricsList.length - 1].point1.x + perpendicularVector.x*distance,
+            metricsList[metricsList.length - 1].point1.y + perpendicularVector.y*distance,
+            metricsList[metricsList.length - 1].point1.z + perpendicularVector.z*distance));
+        points.push(new THREE.Vector3(metricsList[metricsList.length - 1].point2.x + perpendicularVector.x*distance,
+            metricsList[metricsList.length - 1].point2.y + perpendicularVector.y*distance,
+            metricsList[metricsList.length - 1].point2.z + perpendicularVector.z*distance));
+        points.push(metricsList[metricsList.length - 1].point2);
+        console.log(points);
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        material.depthTest = false;
+        const line = new THREE.Line(geometry, material);
+        line.renderOrder = 1;
+        scene.add(line);
+        metricsList[metricsList.length - 1].parallelLines = line;
+    }
 }
 
 function MovePoint(point) {
@@ -137,26 +173,31 @@ function AddPoint(point) {
 
 window.RulerRaycast = function RulerRaycast(camera, sceneArray) {
 
-    // calculate objects intersecting the picking ray
-    let intersects = [];
-    raycaster.setFromCamera(pointer, camera);
-    
-    intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+    if (rulerStage === 2) {
+        MoveParallelLines();
+    } else {
+        // calculate objects intersecting the picking ray
+        let intersects = [];
+        raycaster.setFromCamera(pointer, camera);
 
-    for(let i = 1; i<iterations; i++){
-        raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y +offset*i), camera);
         intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
 
-        raycaster.setFromCamera(new THREE.Vector2(pointer.x +0, pointer.y -offset*i), camera);
-        intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+        for (let i = 1; i < iterations; i++) {
+            raycaster.setFromCamera(new THREE.Vector2(pointer.x + 0, pointer.y + offset * i), camera);
+            intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+
+            raycaster.setFromCamera(new THREE.Vector2(pointer.x + 0, pointer.y - offset * i), camera);
+            intersects = intersects.concat(raycaster.intersectObjects(sceneArray));
+        }
+
+        const point = PickRulerPoint(intersects);
+        if (!point) {
+            HideSphere();
+            return;
+        }
+        MovePoint(point);
     }
 
-    const point = PickRulerPoint(intersects);
-    if (!point) {
-        HideSphere();
-        return;
-    }
-    MovePoint(point);
 }
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -174,18 +215,18 @@ function onPointerMove(event) {
     UpdateLine();
 }
 
-function UpdateLine(){
-    if(metricsList.length > 0 && metricsList[metricsList.length-1].line && metricsList[metricsList.length-1].point2 == null){
-        console.log(metricsList[metricsList.length-1].line);
-        var pos = metricsList[metricsList.length-1].line.geometry.getAttribute("position").array;
+function UpdateLine() {
+    if (metricsList.length > 0 && metricsList[metricsList.length - 1].line && metricsList[metricsList.length - 1].point2 == null) {
+        console.log(metricsList[metricsList.length - 1].line);
+        var pos = metricsList[metricsList.length - 1].line.geometry.getAttribute("position").array;
         pos[3] = refSphere.position.x;
         pos[4] = refSphere.position.y;
         pos[5] = refSphere.position.z;
-        metricsList[metricsList.length-1].line.geometry.setAttribute("position",new THREE.BufferAttribute(pos, 3))
+        metricsList[metricsList.length - 1].line.geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3))
 
     }
 }
-function UpdateCommentsFields(){
+function UpdateCommentsFields() {
     if (!commentsListElement) {
         commentsListElement = document.getElementById("commentsList");
     }
@@ -210,7 +251,7 @@ function UpdateCommentsFields(){
         }
     }
     for (let i = 0; i < commentsDataList.length; i++) {
-        if(commentsDataList[i].comment == "") commentsDataList[i].comment = "<Comentário Vazio>";
+        if (commentsDataList[i].comment == "") commentsDataList[i].comment = "<Comentário Vazio>";
         commentNameList[i].textContent = commentsDataList[i].comment;
         commentsList[i].index = i;
         commentsList[i].addEventListener("mouseover", onCommentMouseOver);
@@ -222,7 +263,7 @@ function UpdateCommentsFields(){
     }
 }
 
-function onCommentClick(event){
+function onCommentClick(event) {
 
     console.log("Click");
     var index = event.currentTarget.index;
@@ -230,14 +271,14 @@ function onCommentClick(event){
     OpenCommentWindow(index);
 
 }
-function onCommentMouseOver(event){
+function onCommentMouseOver(event) {
     console.log("Over");
 
     var index = event.currentTarget.index;
 
     HighlightCommentMarkers(index);
 }
-function onCommentMouseOut(event){
+function onCommentMouseOut(event) {
     console.log("Out");
 
     var index = event.currentTarget.index;
@@ -245,22 +286,22 @@ function onCommentMouseOut(event){
 
 }
 
-function HighlightCommentMarkers(index){
+function HighlightCommentMarkers(index) {
     console.log(commentMarkers[index]);
     console.log(commentMarkers);
     commentMarkers[index].material.color = new THREE.Color(commentHightlightColor);
     commentMarkers[index].scale.set(2, 2, 2);
 }
 
-function ResetHighlightCommentMarkers(index){
+function ResetHighlightCommentMarkers(index) {
     commentMarkers[index].material.color = new THREE.Color(commentColor);
     commentMarkers[index].scale.set(1, 1, 1);
 }
-function onCloseCommentButton(event){
+function onCloseCommentButton(event) {
     var index = event.currentTarget.index;
     removeCommentElement(index);
 }
-function removeCommentElement(index){ 
+function removeCommentElement(index) {
     commentCloseList[index].remove();
     commentNameList[index].remove();
     commentsList[index].remove();
@@ -323,7 +364,7 @@ function UpdateMeasureFields() {
         }
     }
     for (let i = 0; i < metricsList.length; i++) {
-        if(!measureNameList[i].textContent) measureNameList[i].textContent = "Metric " + i;
+        if (!measureNameList[i].textContent) measureNameList[i].textContent = "Metric " + i;
         measureList[i].textContent = metricsList[i].distance.toFixed(2) + 'cm';
         measureList[i].index = i;
         measureList[i].addEventListener("mouseover", onMeasureMouseOver);
@@ -416,74 +457,81 @@ function OnMouseDown(event) {
 }
 
 function onClick(event) {
-    if(!window.canClick) return;
+    if (!window.canClick) return;
     //check if pointer moved less than the threshold
     if (clickPointer && clickPointer.distanceTo(pointer) < limitThreshold) {
-        if (refSphere && refSphere.visible) {
+        if (rulerStage === 2) {
+            rulerStage = 0;
+            //UpdateMeasureFields();
 
-            AddPoint(refSphere.position);
-            
-            if(rulerAddPoint && canUseRuler){
-                
+        } else {
+            if (refSphere && refSphere.visible) {
 
-                if(vertexList.length % 2 != 0){
-                    const v1 = vertexList[vertexList.length - 1];
-                    const m1 = measureMarkers[measureMarkers.length - 1];
-                    const line = AddLine(v1, refSphere.position);
-                    metricsList.push({ distance: null, point1: v1, marker1: m1, point2: null, marker2: null, line: line });
+                AddPoint(refSphere.position);
 
-                    
+                if (rulerAddPoint && canUseRuler) {
+
+
+                    if (vertexList.length % 2 != 0) {
+                        const v1 = vertexList[vertexList.length - 1];
+                        const m1 = measureMarkers[measureMarkers.length - 1];
+                        const line = AddLine(v1, refSphere.position);
+                        metricsList.push({ distance: null, point1: v1, marker1: m1, point2: null, marker2: null, line: line });
+
+
+                    }
+                    if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
+                        const v1 = vertexList[vertexList.length - 1];
+                        const v2 = vertexList[vertexList.length - 2];
+
+                        const m1 = measureMarkers[measureMarkers.length - 1];
+                        const m2 = measureMarkers[measureMarkers.length - 2];
+                        const line = AddLine(v1, v2);
+                        metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
+                        HideSphere();
+                        rulerStage = 2;
+                    }
                 }
-                if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
-                    const v1 = vertexList[vertexList.length - 1];
-                    const v2 = vertexList[vertexList.length - 2];
-    
-                    const m1 = measureMarkers[measureMarkers.length - 1];
-                    const m2 = measureMarkers[measureMarkers.length - 2];
-                    const line = AddLine(v1, v2);
-                    metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
-                    UpdateMeasureFields();
+                else if (commentAddPoint && canUseComment && !commentAlreadyRunning) {
+                    //TODO Comments Logic
+                    SaveCommentPosition(refSphere.position);
+                    InstantiateCommentSphere(refSphere.position);
+                    OpenCommentWindow();
                     HideSphere();
+
                 }
-            }
-            else if (commentAddPoint && canUseComment && !commentAlreadyRunning){
-                //TODO Comments Logic
-                SaveCommentPosition(refSphere.position);
-                InstantiateCommentSphere(refSphere.position);
-                OpenCommentWindow();
-                HideSphere();
 
             }
-            
         }
+
     }
 }
 
-function SaveCommentPosition(position){
+function SaveCommentPosition(position) {
     commentPosition = position;
     //TODO Save position to hold in the list
 }
 
-function OpenCommentWindow(index){
+function OpenCommentWindow(index) {
     submitComment.style.display = 'inline';
     cancelComment.style.display = 'inline';
     updateComment.style.display = 'none';
 
-    if(index != undefined){
+    if (index != undefined) {
         console.log(commentsDataList[index].comment);
         console.log(commentsDataList[index]);
         commentField.value = commentsDataList[index].comment;
         submitComment.style.display = 'none';
         cancelComment.style.display = 'none';
         updateComment.style.display = 'inline';
-    }   
+    }
 
     window.commentWindow.style.display = "inline";
     commentAddPoint = false;
     commentAlreadyRunning = true;
 }
 
-function HideCommentWindow(){
+function HideCommentWindow() {
     window.commentWindow.style.display = "none";
     commentField.value = "";
     commentAddPoint = true;
@@ -491,33 +539,33 @@ function HideCommentWindow(){
 
 }
 
-function DeleteMarker(index){
+function DeleteMarker(index) {
 
-    if(index == -1) index = commentMarkers.length-1;
+    if (index == -1) index = commentMarkers.length - 1;
     scene.remove(commentMarkers[index]);
 }
 
-function SubmitComment(){
-    var obj = {comment:commentField.value, position:commentPosition};
+function SubmitComment() {
+    var obj = { comment: commentField.value, position: commentPosition };
     commentsDataList.push(obj);
     UpdateCommentsFields();
     HideCommentWindow()
 
 }
 
-function CancelComment(){
+function CancelComment() {
     HideCommentWindow();
     DeleteMarker(-1);
 }
 
-function UpdateComment(){
+function UpdateComment() {
     commentsDataList[editionIndex].comment = commentField.value;
     UpdateCommentsFields();
     HideCommentWindow()
 }
 
-function InstantiateCommentSphere(obj){
-    const geometry = new THREE.SphereGeometry(markerSize*2, markerHsegments, markerWsegments);
+function InstantiateCommentSphere(obj) {
+    const geometry = new THREE.SphereGeometry(markerSize * 2, markerHsegments, markerWsegments);
     const material = new THREE.MeshBasicMaterial({ color: commentColor });
     material.depthTest = false;
     const sphere = new THREE.Mesh(geometry, material);
@@ -537,27 +585,27 @@ function onExitClick(event) {
 
 }
 
-function disableRuler(){
+function disableRuler() {
     canUseRuler = false;
 }
-function enableRuler(){
+function enableRuler() {
     canUseRuler = true;
 }
 
-function disableComments(){
+function disableComments() {
     canUseComment = false;
 }
-function enableComments(){
+function enableComments() {
     canUseComment = true;
 }
 
 
-window.resetRuler = function resetRuler(){
+window.resetRuler = function resetRuler() {
     rulerAddPoint = false;
     window.boxBase.style.display = 'none';
 }
 
-window.resetComments = function resetComments(){
+window.resetComments = function resetComments() {
     commentAddPoint = false;
     commentAlreadyRunning = false;
     window.boxComments.style.display = 'none';
@@ -584,12 +632,12 @@ boxClose.addEventListener('click', onExitClick);
 
 boxCloseComment = document.getElementById("boxCloseComments");
 boxCloseComment.addEventListener('click', onExitClick);
-window.commentWindow =  document.getElementById("commentWindow");
+window.commentWindow = document.getElementById("commentWindow");
 commentText = document.getElementById("commentField");
-submitComment =  document.getElementById("submitComment");
+submitComment = document.getElementById("submitComment");
 submitComment.addEventListener('click', SubmitComment);
 
-cancelComment =  document.getElementById("cancelComment");
+cancelComment = document.getElementById("cancelComment");
 cancelComment.addEventListener('click', CancelComment);
 
 
