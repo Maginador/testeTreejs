@@ -170,8 +170,21 @@ function onPointerMove(event) {
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
+
+    UpdateLine();
 }
 
+function UpdateLine(){
+    if(metricsList.length > 0 && metricsList[metricsList.length-1].line && metricsList[metricsList.length-1].point2 == null){
+        console.log(metricsList[metricsList.length-1].line);
+        var pos = metricsList[metricsList.length-1].line.geometry.getAttribute("position").array;
+        pos[3] = refSphere.position.x;
+        pos[4] = refSphere.position.y;
+        pos[5] = refSphere.position.z;
+        metricsList[metricsList.length-1].line.geometry.setAttribute("position",new THREE.BufferAttribute(pos, 3))
+
+    }
+}
 function UpdateCommentsFields(){
     if (!commentsListElement) {
         commentsListElement = document.getElementById("commentsList");
@@ -409,7 +422,18 @@ function onClick(event) {
         if (refSphere && refSphere.visible) {
 
             AddPoint(refSphere.position);
+            
             if(rulerAddPoint && canUseRuler){
+                
+
+                if(vertexList.length % 2 != 0){
+                    const v1 = vertexList[vertexList.length - 1];
+                    const m1 = measureMarkers[measureMarkers.length - 1];
+                    const line = AddLine(v1, refSphere.position);
+                    metricsList.push({ distance: null, point1: v1, marker1: m1, point2: null, marker2: null, line: line });
+
+                    
+                }
                 if (vertexList.length !== 0 && vertexList.length % 2 == 0) {
                     const v1 = vertexList[vertexList.length - 1];
                     const v2 = vertexList[vertexList.length - 2];
