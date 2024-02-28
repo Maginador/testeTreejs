@@ -36,7 +36,7 @@ let iterations = 2;
 window.canClick = false;
 
 let rulerStage = 0;
-let parallelLines;
+let maxDistance = 100;
 
 function PickRulerPoint(objects) {
     let dist = 99999;
@@ -89,7 +89,7 @@ function pickClosestVertex(object) {
 }
 function AddLine(v1, v2) {
 
-    const material = new THREE.LineBasicMaterial({ color: 0xff00 });
+    const material = new THREE.LineBasicMaterial({ color: 0x000000 });
     const points = [];
     points.push(v1);
     points.push(v2);
@@ -118,7 +118,7 @@ function MoveParallelLines() {
 
         // Vetor perpendicular à linha
         let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
-        const material = new THREE.LineBasicMaterial({ color: 0xff00 });
+        const material = new THREE.LineBasicMaterial({ color: 0x000000 });
         const points = [];
         points.push(metricsList[metricsList.length - 1].point1);
         points.push(new THREE.Vector3(metricsList[metricsList.length - 1].point1.x + perpendicularVector.x*distance,
@@ -136,6 +136,29 @@ function MoveParallelLines() {
         scene.add(line);
         metricsList[metricsList.length - 1].parallelLines = line;
     }
+    else{
+        distance = pointer.y*maxDistance;
+        var positions =  metricsList[metricsList.length - 1].parallelLines.geometry.getAttribute("position").array;
+         // Vetor direção da linha
+         let lineDirection = new THREE.Vector3().subVectors(metricsList[metricsList.length - 1].point2, metricsList[metricsList.length - 1].point1).normalize();
+
+         // Vetor arbitrário não colinear
+         let arbitraryVector = new THREE.Vector3(1, 0, 0);
+ 
+         // Vetor perpendicular à linha
+         let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
+
+         positions[3] = metricsList[metricsList.length - 1].point1.x + perpendicularVector.x*distance;
+         positions[4] = metricsList[metricsList.length - 1].point1.y + perpendicularVector.y*distance;
+         positions[5] = metricsList[metricsList.length - 1].point1.z + perpendicularVector.z*distance;
+         
+         positions[6] = metricsList[metricsList.length - 1].point2.x + perpendicularVector.x*distance;
+         positions[7] = metricsList[metricsList.length - 1].point2.y + perpendicularVector.y*distance;
+         positions[8] = metricsList[metricsList.length - 1].point2.z + perpendicularVector.z*distance;
+         metricsList[metricsList.length - 1].parallelLines.geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3))
+
+    }
+
 }
 
 function MovePoint(point) {
