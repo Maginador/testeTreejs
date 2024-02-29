@@ -41,13 +41,13 @@ window.canClick = false;
 let rulerStage = 0;
 let maxDistance = 100;
 
-const lineMaterial   = new LineMaterial( {
+const lineMaterial = new LineMaterial({
 
     color: 0xffffff,
     linewidth: .002, // in world units with size attenuation, pixels otherwise
     vertexColors: true,
     dashed: false,
-} );
+});
 
 
 function PickRulerPoint(objects) {
@@ -59,15 +59,12 @@ function PickRulerPoint(objects) {
             index = i;
         }
     }
-
-    //constants 
+ 
     if (!objects[index])
         return null;
     else {
         return pickClosestVertex(objects[index]);
     }
-
-
 }
 
 function pickClosestVertex(object) {
@@ -100,15 +97,14 @@ function pickClosestVertex(object) {
     return resultPos;
 }
 function AddLine(v1, v2) {
-''
+    ''
     const points = [];
-    points.push(v1.x,v1.y,v1.z);
-    points.push(v2.x,v2.y, v2.z);
+    points.push(v1.x, v1.y, v1.z);
+    points.push(v2.x, v2.y, v2.z);
     const geometry = new LineGeometry();
-    geometry.setPositions( points );
+    geometry.setPositions(points);
 
-   // const geometry = new THREE.BufferGeometry().setFromPoints(points);
-   lineMaterial.depthTest = false;
+    lineMaterial.depthTest = false;
     const line = new Line2(geometry, lineMaterial);
     line.renderOrder = 1;
     scene.add(line);
@@ -126,21 +122,21 @@ function MoveParallelLines() {
 
         // Vetor direção da linha
         let lineDirection = new THREE.Vector3().subVectors(metricsList[metricsList.length - 1].point2, metricsList[metricsList.length - 1].point1).normalize();
-        
+
         // Vetor arbitrário não colinear
         let arbitraryVector = new THREE.Vector3(1, 0, 0);
 
         // Vetor perpendicular à linha
         let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
         const points = [];
-        points.push(metricsList[metricsList.length - 1].point1.x,metricsList[metricsList.length - 1].point1.y,metricsList[metricsList.length - 1].point1.z);
-        points.push(metricsList[metricsList.length - 1].point1.x + perpendicularVector.x*distance,
-            metricsList[metricsList.length - 1].point1.y + perpendicularVector.y*distance,
-            metricsList[metricsList.length - 1].point1.z + perpendicularVector.z*distance);
-        points.push(metricsList[metricsList.length - 1].point2.x + perpendicularVector.x*distance,
-            metricsList[metricsList.length - 1].point2.y + perpendicularVector.y*distance,
-            metricsList[metricsList.length - 1].point2.z + perpendicularVector.z*distance);
-        points.push(metricsList[metricsList.length - 1].point2.x,metricsList[metricsList.length - 1].point2.y,metricsList[metricsList.length - 1].point2.z);
+        points.push(metricsList[metricsList.length - 1].point1.x, metricsList[metricsList.length - 1].point1.y, metricsList[metricsList.length - 1].point1.z);
+        points.push(metricsList[metricsList.length - 1].point1.x + perpendicularVector.x * distance,
+            metricsList[metricsList.length - 1].point1.y + perpendicularVector.y * distance,
+            metricsList[metricsList.length - 1].point1.z + perpendicularVector.z * distance);
+        points.push(metricsList[metricsList.length - 1].point2.x + perpendicularVector.x * distance,
+            metricsList[metricsList.length - 1].point2.y + perpendicularVector.y * distance,
+            metricsList[metricsList.length - 1].point2.z + perpendicularVector.z * distance);
+        points.push(metricsList[metricsList.length - 1].point2.x, metricsList[metricsList.length - 1].point2.y, metricsList[metricsList.length - 1].point2.z);
         const geometry = new LineGeometry();
         geometry.setPositions(points);
         lineMaterial.depthTest = false;
@@ -150,44 +146,38 @@ function MoveParallelLines() {
         metricsList[metricsList.length - 1].parallelLines = line;
         console.log(line);
     }
-    else{
-        distance = pointer.y*maxDistance;
+    else {
+        distance = pointer.y * maxDistance;
         console.log("distance" + distance);
-        var positions =  [];
-         // Vetor direção da linha
-         let lineDirection = new THREE.Vector3().subVectors(metricsList[metricsList.length - 1].point2, metricsList[metricsList.length - 1].point1).normalize();
+        var positions = [];
+        // Vetor direção da linha
+        let lineDirection = new THREE.Vector3().subVectors(metricsList[metricsList.length - 1].point2, metricsList[metricsList.length - 1].point1).normalize();
 
-         // Vetor arbitrário não colinear
-         let arbitraryVector = new THREE.Vector3(1, 0, 0);
- 
-         // Vetor perpendicular à linha
-         let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
+        // Vetor arbitrário não colinear
+        let arbitraryVector = new THREE.Vector3(1, 0, 0);
+
+        // Vetor perpendicular à linha
+        let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
         const point1 = metricsList[metricsList.length - 1].point1;
         const point2 = metricsList[metricsList.length - 1].point2;
-        console.log(point1);
-        console.log(point2);
+
         positions[0] = point1.x;
         positions[1] = point1.y;
         positions[2] = point1.z;
 
-        positions[3] = point1.x+ perpendicularVector.x * distance;
+        positions[3] = point1.x + perpendicularVector.x * distance;
         positions[4] = point1.y + perpendicularVector.y * distance;
-        positions[5] = point1.z+ perpendicularVector.z * distance;
+        positions[5] = point1.z + perpendicularVector.z * distance;
 
-        positions[6] = point2.x+ perpendicularVector.x * distance;
+        positions[6] = point2.x + perpendicularVector.x * distance;
         positions[7] = point2.y + perpendicularVector.y * distance;
-        positions[8] = point2.z+ perpendicularVector.z * distance;
+        positions[8] = point2.z + perpendicularVector.z * distance;
 
-        positions[9] = point2.x; 
-        positions[10] = point2.y; 
+        positions[9] = point2.x;
+        positions[10] = point2.y;
         positions[11] = point2.z;
 
-        //  positions.push(point2.x);
-        //  positions.push(point2.y + distance);
-        //  positions.push(point2.z );
-        //  //positions.push(point2.x, point2.y, point2.z);
-
-         metricsList[metricsList.length - 1].parallelLines.geometry.setPositions(positions);
+        metricsList[metricsList.length - 1].parallelLines.geometry.setPositions(positions);
 
     }
 
@@ -270,23 +260,23 @@ function onPointerMove(event) {
     UpdateLine();
 }
 
-function SetLine(line, v1, v2){
+function SetLine(line, v1, v2) {
 
-        var pos = [];
-        pos[0] = v1.x;
-        pos[1] = v1.y;
-        pos[2] = v1.z;
-        pos[3] = v2.x;
-        pos[4] = v2.y;
-        pos[5] = v2.z;
-        line.geometry.setPositions(pos);
-        //metricsList[metricsList.length - 1].line.geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3))
-        line.computeLineDistances();
+    var pos = [];
+    pos[0] = v1.x;
+    pos[1] = v1.y;
+    pos[2] = v1.z;
+    pos[3] = v2.x;
+    pos[4] = v2.y;
+    pos[5] = v2.z;
+    line.geometry.setPositions(pos);
+    //metricsList[metricsList.length - 1].line.geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3))
+    line.computeLineDistances();
 }
 function UpdateLine() {
-    
+
     if (metricsList.length > 0 && metricsList[metricsList.length - 1].line && metricsList[metricsList.length - 1].point2 == null) {
-        SetLine(metricsList[metricsList.length - 1].line, metricsList[metricsList.length - 1].point1,refSphere.position);
+        SetLine(metricsList[metricsList.length - 1].line, metricsList[metricsList.length - 1].point1, refSphere.position);
     }
 }
 function UpdateCommentsFields() {
@@ -549,13 +539,13 @@ function onClick(event) {
 
                         const m1 = measureMarkers[measureMarkers.length - 1];
                         const m2 = measureMarkers[measureMarkers.length - 2];
-                        SetLine(metricsList[metricsList.length-1].line, v1, v2);
+                        SetLine(metricsList[metricsList.length - 1].line, v1, v2);
                         //const line = AddLine(v1, v2);
-                        metricsList[metricsList.length-1].point1 = v1;
-                        metricsList[metricsList.length-1].point2 = v2;
-                        metricsList[metricsList.length-1].marker1 = m1;
-                        metricsList[metricsList.length-1].marker2 = m2;
-                        metricsList[metricsList.length-1].distance = v1.distanceTo(v2);
+                        metricsList[metricsList.length - 1].point1 = v1;
+                        metricsList[metricsList.length - 1].point2 = v2;
+                        metricsList[metricsList.length - 1].marker1 = m1;
+                        metricsList[metricsList.length - 1].marker2 = m2;
+                        metricsList[metricsList.length - 1].distance = v1.distanceTo(v2);
                         //metricsList.push({ distance: v1.distanceTo(v2), point1: v1, marker1: m1, point2: v2, marker2: m2, line: line });
                         HideSphere();
                         rulerStage = 2;
