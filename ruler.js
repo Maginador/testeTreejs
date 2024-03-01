@@ -1,7 +1,4 @@
 import * as THREE from 'three';
-import { Line2 } from '/jsm/lines/Line2.js';
-import { LineMaterial } from '/jsm/lines/LineMaterial.js';
-import { LineGeometry } from '/jsm/lines/LineGeometry.js';
 
 let boxClose, boxCloseComment;
 let commentWindow, commentText, submitComment, cancelComment, updateComment;
@@ -41,13 +38,7 @@ window.canClick = false;
 let rulerStage = 0;
 let maxDistance = 100;
 
-const lineMaterial = new LineMaterial({
-
-    color: 0xffffff,
-    linewidth: .002, // in world units with size attenuation, pixels otherwise
-    vertexColors: true,
-    dashed: false,
-});
+const lineMaterial = window.getLineMaterial();
 
 
 function PickRulerPoint(objects) {
@@ -59,7 +50,7 @@ function PickRulerPoint(objects) {
             index = i;
         }
     }
- 
+
     if (!objects[index])
         return null;
     else {
@@ -101,11 +92,11 @@ function AddLine(v1, v2) {
     const points = [];
     points.push(v1.x, v1.y, v1.z);
     points.push(v2.x, v2.y, v2.z);
-    const geometry = new LineGeometry();
+    const geometry = window.generateLineGeometry();
     geometry.setPositions(points);
 
     lineMaterial.depthTest = false;
-    const line = new Line2(geometry, lineMaterial);
+    const line = window.generateLine2(geometry, lineMaterial);
     line.renderOrder = 1;
     scene.add(line);
     return line;
@@ -117,11 +108,13 @@ function HideSphere() {
 }
 var distance = 10;
 function MoveParallelLines() {
+    const point1 = metricsList[metricsList.length - 1].point1;
+    const point2 = metricsList[metricsList.length - 1].point2;
 
     if (metricsList.length > 0 && !metricsList[metricsList.length - 1].parallelLines) {
 
         // Vetor direção da linha
-        let lineDirection = new THREE.Vector3().subVectors(metricsList[metricsList.length - 1].point2, metricsList[metricsList.length - 1].point1).normalize();
+        let lineDirection = new THREE.Vector3().subVectors(point2, point1).normalize();
 
         // Vetor arbitrário não colinear
         let arbitraryVector = new THREE.Vector3(1, 0, 0);
@@ -129,37 +122,38 @@ function MoveParallelLines() {
         // Vetor perpendicular à linha
         let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
         const points = [];
-        points.push(metricsList[metricsList.length - 1].point1.x, metricsList[metricsList.length - 1].point1.y, metricsList[metricsList.length - 1].point1.z);
-        points.push(metricsList[metricsList.length - 1].point1.x + perpendicularVector.x * distance,
-            metricsList[metricsList.length - 1].point1.y + perpendicularVector.y * distance,
-            metricsList[metricsList.length - 1].point1.z + perpendicularVector.z * distance);
-        points.push(metricsList[metricsList.length - 1].point2.x + perpendicularVector.x * distance,
-            metricsList[metricsList.length - 1].point2.y + perpendicularVector.y * distance,
-            metricsList[metricsList.length - 1].point2.z + perpendicularVector.z * distance);
-        points.push(metricsList[metricsList.length - 1].point2.x, metricsList[metricsList.length - 1].point2.y, metricsList[metricsList.length - 1].point2.z);
-        const geometry = new LineGeometry();
+        points.push(point1.x, point1.y, point1.z);
+        points.push(point1.x + perpendicularVector.x * distance,
+            point1.y + perpendicularVector.y * distance,
+            point1.z + perpendicularVector.z * distance);
+        points.push(point2.x + perpendicularVector.x * distance,
+            point2.y + perpendicularVector.y * distance,
+            point2.z + perpendicularVector.z * distance);
+        points.push(point2.x, point2.y, point2.z);
+        const geometry = window.generateLineGeometry();
         geometry.setPositions(points);
         lineMaterial.depthTest = false;
-        const line = new Line2(geometry, lineMaterial);
+        const line = new window.generateLine2(geometry, lineMaterial);
         line.renderOrder = 1;
         scene.add(line);
         metricsList[metricsList.length - 1].parallelLines = line;
         console.log(line);
+        CreateMetricsCanvasMaterial(new THREE.Vector3(( point1.x +  point2.x)/2,
+        ( point1.y +  point2.y)/2,( point1.z +  point2.z)/2), 
+            metricsList[metricsList.length - 1].distance);
     }
     else {
         distance = pointer.y * maxDistance;
-        console.log("distance" + distance);
+        //console.log("distance" + distance);
         var positions = [];
         // Vetor direção da linha
-        let lineDirection = new THREE.Vector3().subVectors(metricsList[metricsList.length - 1].point2, metricsList[metricsList.length - 1].point1).normalize();
+        let lineDirection = new THREE.Vector3().subVectors(point2, point1).normalize();
 
         // Vetor arbitrário não colinear
         let arbitraryVector = new THREE.Vector3(1, 0, 0);
 
         // Vetor perpendicular à linha
         let perpendicularVector = new THREE.Vector3().crossVectors(lineDirection, arbitraryVector).normalize();
-        const point1 = metricsList[metricsList.length - 1].point1;
-        const point2 = metricsList[metricsList.length - 1].point2;
 
         positions[0] = point1.x;
         positions[1] = point1.y;
@@ -178,7 +172,11 @@ function MoveParallelLines() {
         positions[11] = point2.z;
 
         metricsList[metricsList.length - 1].parallelLines.geometry.setPositions(positions);
-
+        metricsList[metricsList.length - 1].metricData.position.set( 
+            ( point1.x +  point2.x)/2 + perpendicularVector.x * (distance/2),
+            ( point1.y +  point2.y)/2 + perpendicularVector.y * (distance/2),
+            ( point1.z +  point2.z)/2 + perpendicularVector.z * (distance/2)
+        );
     }
 
 }
@@ -242,12 +240,20 @@ window.RulerRaycast = function RulerRaycast(camera, sceneArray) {
         }
         MovePoint(point);
     }
-
+    BillboardText();
 }
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const clickPointer = new THREE.Vector2();
 const limitThreshold = 0.1;
+
+function BillboardText(){
+    for(var i =0; i <metricsList.length; i++){
+        console.log(getCurrentCamera().position);
+        console.log(getCurrentCamera());
+        if(metricsList[i].metricData)metricsList[i].metricData.lookAt(getCurrentCamera().position);
+    }
+}
 function onPointerMove(event) {
 
     // calculate pointer position in normalized device coordinates
@@ -634,6 +640,29 @@ function InstantiateCommentSphere(obj) {
     commentMarkers.push(sphere);
     scene.add(sphere);
     console.log(commentMarkers);
+}
+
+function CreateMetricsCanvasMaterial(position, metric) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = '25pt Arial'
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = 'black'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(metric.toFixed(2) + 'cm', canvas.width / 2, canvas.height / 2)
+    const texture = new THREE.Texture(canvas)
+    const canvasMaterial = new THREE.MeshBasicMaterial();
+    canvasMaterial.blending = THREE.MultiplyBlending;
+    canvasMaterial.map = texture;
+    canvasMaterial.depthTest = false;
+    const geometry = new THREE.BoxGeometry(100,100,5);
+    const mesh = new THREE.Mesh(geometry,canvasMaterial);
+    mesh.renderOrder = 1;
+    scene.add(mesh);
+    metricsList[metricsList.length - 1].metricData = mesh;
+    texture.needsUpdate = true
 }
 function onExitClick(event) {
     rulerAddPoint = false;
