@@ -18,7 +18,7 @@
 	<script src="cameraManager.js"></script>
 	<script src="stats.min.js"></script>
 	<script src="mapper.js"></script>
-
+	<script src="dynamic-mapper.js"></script>
 
 	<script type="x-shader/x-vertex" id="bloom-vertexshader">
 
@@ -89,6 +89,7 @@
 		}
 	}
   </script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   	<script src="/lineHandler.js" type="module"></script>
 	<script src="/bloomhandler.js" type="module"></script>
 	<script src="/performancehandler.js" type="module"></script>
@@ -99,11 +100,12 @@
 
 		var materialsPBR = [];
 		var materialsPBRDark = [];
+		var dynamicTextures={};
+		var spheres = [];
 		var lighthelpers = [];
 		var clipMAX = 100.0;
 		var clipMIN = 0.0;
 		var headlight;
-
 		var toolbarButtons = [];
 		// 
 		const BLOOM_SCENE = 1;
@@ -121,11 +123,40 @@
 			return finalEstimation + ngeom + mat.length;
 		}
 		let stats = new Stats();
-			
-		async function init() {
+		function handleFileSelect(event) {
+			const file = event.target.files[0];
+			console.log(file);
+			if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					const texture = new THREE.TextureLoader().load(e.target.result);
+					for(var i = 0; i < dynamicTextures[selectedSphere.index].materials.length; i++){
+						dynamicTextures[selectedSphere.index].materials[i].map = texture;
+						dynamicTextures[selectedSphere.index].materials[i].needsUpdate = true;
+					}
+                    
+					selectedSphere.img.src = e.target.result;
+		var ratio = Math.min(100 / selectedSphere.img.src.width, 100 / selectedSphere.img.src.height);
 
+			var Cwidth = selectedSphere.img.src.width * ratio + "px";  // Adjust the width as needed
+			var Cheight = selectedSphere.img.src.height* ratio + "px"; // Adjust the height as needed
+					
+    };
+				reader.readAsDataURL(event.target.files[0]);
+			} else {
+				alert('Please select a valid image file (jpg or png).');
+			}
+    }
+		async function init() {
+			raycaster = new THREE.Raycaster();
+			mouse = new THREE.Vector2();
+
+			// File Input
+			fileInput = document.getElementById('fileInput');
+        	fileInput.addEventListener('change', handleFileSelect, false);
 			geometryList = [];
 			bufferGeo = new THREE.BufferGeometry();
+			window.addEventListener('click', onMouseClick, false);
 
 			var lighcount = 0;
 			var total = calculateTotalData();
@@ -149,7 +180,7 @@
 			var chk_tex_ok = false;
 			// viewport of WebGL
 			aspr = window.innerWidth / window.innerHeight;
-			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setPixelRatio(window.devicePixelRatio*1.5);
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			document.getElementById('container').appendChild(renderer.domElement);
 
@@ -166,7 +197,7 @@
 			scene = new THREE.Scene();
 
 			await InitMapper();
-
+			setJson(getDynamicData());
 			//Initialize Cameras 
 			instantiatePerspectiveCamera(aspr);
 			instantiateOrthographicCamera(window.innerWidth, window.innerHeight);
@@ -278,6 +309,9 @@
 				const tempMaterial = await MapMaterial(mat[i][3].toLowerCase())
 
 				const tempLightData = await MapLightsMaterials(mat[i][3].toLowerCase());
+
+				tempMaterial.isDynamic = getReference( mat[i][3].toLowerCase() );
+				tempMaterial.tName = mat[i][3].toLowerCase() ;
 				if (tempLightData) {
 					tempMaterial.isLight = true;
 					tempMaterial.json = tempLightData;
@@ -422,6 +456,20 @@
 
 							mface.visible = false;
 							break;
+						}
+						if(materialsPBR[mati] && materialsPBR[mati].isDynamic && materialsPBR[mati].map ){
+							let str = materialsPBR[mati].tName;
+							if(!dynamicTextures[str]){
+								var vertexMiddle = computeVertexMiddle(geom);
+								button = createButton(str, "dynamicButtonEntity", "dynamicButton",materialsPBR[mati].map.image);
+								document.body.appendChild(button);
+
+								spheres.push(button);
+								dynamicTextures[str] = new Object();
+								dynamicTextures[str].materials = [];
+								dynamicTextures[str].button = button;
+							}
+								dynamicTextures[str].materials.push(materialsPBR[mati]);
 						}
 
 						if (materialsPBR.length >= mati && materialsPBR[mati] && materialsPBR[mati].bloom) {
@@ -673,6 +721,75 @@
 				await new Promise(r => setTimeout(r, 0));
 			}
 		}
+
+		let buttonCount = 0;
+
+		function createButton(str, id, className, imageUrl) {
+			// Create a new button element
+			const button = document.createElement('button');
+			
+			// Set the text of the button
+			button.innerHTML = "- Imagem " + (spheres.length+1) + " -<br>"+ imageUrl.width + " x " + imageUrl.height;
+			
+			// Set the ID of the button, if provided
+			if (id) {
+				button.id = id+ spheres.length;
+			}
+			
+			// Set the class of the button, if provided
+			if (className) {
+				button.className = className;
+			}
+
+			if (imageUrl) {
+				const img = document.createElement('img');
+				img.src = imageUrl.src;
+				var ratio = Math.min(100 / imageUrl.width, 100 / imageUrl.height);
+
+				img.style.width = imageUrl.width * ratio + "px";  // Adjust the width as needed
+				img.style.height = imageUrl.height* ratio + "px"; // Adjust the height as needed
+				button.prepend(img); // Add the image to the beginning of the button
+				button.img = img;
+			}
+			button.index = str;
+			button.style.position = 'fixed';
+			button.style.left = '10px';
+			button.style.top = 400 + (10 + 100 * buttonCount) + 'px'; // Adjust the 60 value based on button height and margin
+			button.style.display = 'flex';
+			button.style.alignItems = 'center';
+			button.style.gap = '10px';
+			button.style.height = '80px';
+			buttonCount++;
+			button.onclick = () => {
+				selectedSphere = button;
+				fileInput.click();
+			} 
+
+			// Return the created button
+			return button;
+		}
+
+		function createSphere(position, str){
+			const markerSize = 20;
+			const markerHsegments = 12;
+			const markerWsegments = 12;
+			const geometry = new THREE.SphereGeometry(markerSize, markerHsegments, markerWsegments);
+			const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+			material.depthTest = false;
+			const sphere = new THREE.Mesh(geometry, material);
+
+			sphere.position.set(position.x + (markerSize / 2), position.y + (markerSize / 2), position.z + (markerSize / 2));
+			sphere.renderOrder = 1;
+			sphere.clickable = true;
+			sphere.index = str;
+			scene.add(sphere);
+			return sphere;
+		}
+
+		function rePosSphere(sphere, pos){
+			sphere.position.set((pos.x ), (pos.y), (pos.z ));
+
+		}
 		function computeVertexMiddle(geom) {
 			var x = 0, y = 0, z = 0;
 			for (var i = 0; i < geom.vertices.length; i++) {
@@ -734,6 +851,23 @@
 		function texture_show(chk) {
 			console.log(mat);
 		}
+
+		function onMouseClick(event) {
+        // Update the mouse variable
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        // Raycast
+        raycaster.setFromCamera(mouse, getPerspectiveCamera());
+        //const intersects = raycaster.intersectObjects(spheres);
+
+        // if (intersects.length > 0) {
+		// 	console.log(intersects[0].object);
+        //     selectedSphere = intersects[0].object;
+        //     fileInput.click();
+        // }
+    }
+
 		function render() {
 			renderer.info.autoReset = false;
 			renderer.info.reset(); 
@@ -747,7 +881,7 @@
 				if (rulerAddPoint) RulerRaycast(getCurrentCamera(), window.sceneObjects);
 				if (commentAddPoint) RulerRaycast(getCurrentCamera(), window.sceneObjects);
 
-				console.log(renderer.info.render.calls);
+				//console.log(renderer.info.render.calls);
 			}
 			stats.end();
 			requestAnimationFrame(render);
@@ -757,6 +891,11 @@
 
 <body onload="main_wgl();" style="overflow: hidden;height: 100%;">
 	<div id="container"></div>
+	<input type="file" id="fileInput" accept=".jpg,.jpeg,.png" style="display: none;">
+	<button id="dynamicButtonEntity0">
+		<img id="resultImage" src="" alt="Cropped Image">
+	</button>
+
 	<div id="menu"> </div>
 	<video id="video" loop crossOrigin="anonymous" playsinline style="display:none">
 	</video>

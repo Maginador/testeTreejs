@@ -1,4 +1,15 @@
 {
+
+
+    "dynamicRefs":{
+        "pattern": {
+            "prefix": "",
+            "sufix": "editavel",
+            "contains": "imagem",
+            "equals": ""
+        },"defaultTexture": "",
+        "newPath": "/gl_image/newImage.ext"
+    },
     "cameras":{
         "perspective":{
             "position":{
@@ -29,8 +40,8 @@
             "bumpscale": 0.01,
             "metalness": 0.1,
             "roughness": 0.7,
-            "bypassmap": true,
-            "bypasscolor": true,
+            "bypassmap": false,
+            "bypasscolor": false,
             "tintcolor": "#ffff00",
             "bumpmapRepeatU": 0.3,
             "bumpmapRepeatV": 0.3

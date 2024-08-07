@@ -220,4 +220,9 @@ async function InitMapper() {
     jsonData = await GetMapperJson();
     jsonMaterials = jsonData.materials;
     jsonLights = jsonData.lights;
+    jsonDynamicData = jsonData.dynamicRefs;
+}
+
+function getDynamicData(){
+    return jsonDynamicData;
 }
